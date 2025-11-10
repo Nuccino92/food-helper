@@ -11,7 +11,7 @@ export default function Header() {
   return (
     <header className="flex w-screen items-center justify-between border-b p-4">
       {/* Left side header */}
-      <h1 className="text-xl font-bold">Mesau</h1>
+      <h1 className="text-xl font-bold">MY APP NAME</h1>
 
       {/* Right side header */}
       <div className="flex items-center gap-x-2">

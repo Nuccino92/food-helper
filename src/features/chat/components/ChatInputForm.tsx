@@ -36,7 +36,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
               className={cn(
                 `custom-scrollbar`,
                 "placeholder:text-muted-foreground flex w-full resize-none border-0 bg-transparent p-2 text-base focus-visible:ring-0 focus-visible:ring-offset-0",
-              )} // Simplified styling: no border, transparent bg
+              )}
             />
           </div>
 

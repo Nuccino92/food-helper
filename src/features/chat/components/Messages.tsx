@@ -6,5 +6,5 @@ interface MessageListProps {
 }
 
 export default function Messages({ messages, isLoading }: MessageListProps) {
-  return <div>messages</div>;
+  return <div>content</div>;
 }
