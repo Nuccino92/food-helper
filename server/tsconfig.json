@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022" /* Set JavaScript version for output */,
+    "module": "NodeNext" /* Use modern Node.js module system */,
+    "moduleResolution": "NodeNext" /* THIS IS THE FIX: Match the module system */,
+    "outDir": "./dist" /* Where to output compiled JS files */,
+    "rootDir": "./src" /* Where your source TS files are */,
+    "strict": true /* Enable all strict type-checking options */,
+    "esModuleInterop": true /* Allows default imports from CJS modules */,
+    "skipLibCheck": true /* Skip type checking of declaration files */,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true /* Generate source maps for easier debugging */
+  },
+  "include": ["src/**/*"] /* Which files TypeScript should compile */,
+  "exclude": ["node_modules"] /* Which folders to ignore */
+}
