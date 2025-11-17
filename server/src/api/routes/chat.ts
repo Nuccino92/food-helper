@@ -1,40 +1,42 @@
 import { Router, Request, Response } from "express";
-import { mockLlmStream } from "../../services/chat.service";
+// IMPORTANT: Make sure to import the new service function
+import { mockLlmSseStream } from "../../services/chat.service";
 import { Message } from "../../types/chat";
 
-// Create a new router instance
 const router = Router();
 
-// This function will handle requests to our streaming endpoint
 export default (app: Router) => {
   app.use("/chat", router);
 
+  // We are keeping this as a POST route to align with real LLM APIs
+  // that need to receive a large conversation history in the body.
   router.post("/stream", async (req: Request, res: Response) => {
     try {
-      // We get the messages from the client, even if we don't use them in the mock
       const { messages }: { messages: Message[] } = req.body;
-
       if (!messages) {
         return res.status(400).json({ error: "Messages are required" });
       }
 
-      // --- Important: Set Headers for Streaming ---
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.setHeader("Transfer-Encoding", "chunked");
+      // --- CRITICAL: Set Headers for Server-Sent Events (SSE) ---
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders(); // Flush the headers to establish the connection
 
-      // Get the async generator from our service
-      const stream = mockLlmStream(messages);
+      // Get the async generator from our NEW SSE service
+      const stream = mockLlmSseStream(messages);
 
-      // Pipe the stream to the response
-      // The `for await...of` loop is perfect for consuming async generators
-      for await (const chunk of stream) {
-        res.write(chunk); // Write each chunk to the response as it arrives
+      // Pipe the formatted SSE events to the response
+      for await (const sseEvent of stream) {
+        res.write(sseEvent);
       }
 
-      res.end(); // End the response when the stream is finished
+      // We don't explicitly call res.end(). The 'end' event will signal the client
+      // to close the connection. The connection will also close if the client disconnects.
     } catch (error) {
       console.error("Error in chat stream:", error);
-      res.status(500).send("Something went wrong during the stream.");
+      // Can't send a 500 header here as they are already sent.
+      // Just log it and the connection will close.
     }
   });
 };

@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
-import { useChat, type Message as MessageType } from "../api";
+
 import { ChatInputForm } from "./ChatInputForm";
 import Messages from "./Messages";
 import QuickSelects from "./QuickSelects";
 import { QUICK_SELECT_PROMPTS } from "@/data/prompts";
+import { useChat, type Message as MessageType } from "../hooks/useChat";
 
 export default function ChatInterface() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { messages, isLoading, isWaitingForResponse, sendMessage } = useChat();
 
   const isChatEmpty = messages.length === 0;
 
@@ -21,12 +22,14 @@ export default function ChatInterface() {
         <EmptyChat
           messages={messages}
           isLoading={isLoading}
+          isWaitingForResponse={isWaitingForResponse}
           sendMessage={sendMessage}
         />
       ) : (
         <WithMessage
           messages={messages}
           isLoading={isLoading}
+          isWaitingForResponse={isWaitingForResponse}
           sendMessage={sendMessage}
         />
       )}
@@ -37,14 +40,23 @@ export default function ChatInterface() {
 type ChildProps = {
   messages: MessageType[];
   isLoading: boolean;
+  isWaitingForResponse: boolean;
   sendMessage: (message: string) => void;
 };
 
-function WithMessage({ messages, isLoading, sendMessage }: ChildProps) {
+function WithMessage({
+  messages,
+  isLoading,
+  isWaitingForResponse,
+  sendMessage,
+}: ChildProps) {
   return (
     <>
-      <div className={cn("flex-1 overflow-y-auto")}>
-        <Messages messages={messages} isLoading={isLoading} />
+      <div className={cn("custom-scrollbar flex-1 overflow-y-auto")}>
+        <Messages
+          messages={messages}
+          isWaitingForResponse={isWaitingForResponse}
+        />
       </div>
       <ChatInputForm onSend={sendMessage} isLoading={isLoading} />
     </>
