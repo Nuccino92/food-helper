@@ -7,10 +7,17 @@ import { Message } from "../types/chat";
  */
 
 const MOCK_RESPONSE_PARTS = [
-  "Of course! Based on your ingredients, a classic chicken and bell pepper stir-fry is an excellent choice. ",
-  "Here is a simple recipe to guide you:\n\n1. First, slice the chicken and peppers. Sauté the chicken until golden. ",
-  "2. Next, add the peppers and stir-fry for 3-4 minutes. ",
-  "3. Finally, add your favorite sauce and serve over rice. Enjoy your meal!",
+  // Chunk 1: Intro + Header (###)
+  "Of course! Based on your ingredients, here is a great recipe:\n\n### 🐔 Classic Chicken & Pepper Stir-Fry\n\n",
+
+  // Chunk 2: Bold text (**) and a bulleted list (-)
+  "**Ingredients Needed:**\n- 1 lb Chicken breast (cubed)\n- 2 Bell peppers (sliced)\n- Soy sauce & garlic\n\n",
+
+  // Chunk 3: Numbered list (1.) and some bolding inside the steps
+  "**Instructions:**\n1. Heat oil in a pan over medium-high heat.\n2. Add the **chicken** and cook until golden brown.\n",
+
+  // Chunk 4: The rest of the list and a closing statement
+  "3. Toss in the peppers and stir-fry for 3-4 minutes.\n4. Pour in the sauce and serve over rice.\n\nEnjoy your meal!",
 ];
 
 // Helper function to format messages in the SSE protocol

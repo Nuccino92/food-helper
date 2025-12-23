@@ -7,6 +7,7 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
 
 @import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 
 :root {
