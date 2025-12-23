@@ -224,6 +224,10 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
 */
 
 @layer base {
+  :root {
+    --header-height: 70px;
+  }
+
   * {
     @apply border-border outline-ring/50;
     margin: 0;

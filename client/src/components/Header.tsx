@@ -9,7 +9,7 @@ export default function Header() {
   const isDark = theme === "dark";
 
   return (
-    <header className="flex w-screen items-center justify-between border-b p-4">
+    <header className="flex h-(--header-height) w-screen items-center justify-between border-b p-4">
       {/* Left side header */}
       <h1 className="text-xl font-bold">MY APP NAME</h1>
 
