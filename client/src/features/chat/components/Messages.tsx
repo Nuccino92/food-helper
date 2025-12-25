@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Message } from "../hooks/useChat";
 import { cn } from "@/lib/utils";
-import { Bot, User } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -73,20 +72,15 @@ export default function Messages({
             ref={isLastUserMessage ? lastUserMessageRef : null}
             style={heightStyle}
             className={cn(
+              index !== 0 && isUser && "mt-12",
               "flex scroll-mt-16 items-start gap-4 transition-all",
               isUser && "justify-end",
             )}
           >
-            {!isUser && (
-              <div className="bg-primary text-primary-foreground mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none">
-                <Bot className="h-5 w-5" />
-              </div>
-            )}
-
             <div
               className={cn(
-                "max-w-[85%] rounded-lg p-4 text-sm leading-relaxed",
-                isUser ? "bg-primary text-primary-foreground" : "bg-muted",
+                "rounded-lg p-4 text-sm leading-relaxed",
+                isUser ? "bg-primary text-primary-foreground" : "",
               )}
             >
               <div
@@ -123,12 +117,6 @@ export default function Messages({
                 </ReactMarkdown>
               </div>
             </div>
-
-            {isUser && (
-              <div className="bg-muted mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none">
-                <User className="h-5 w-5" />
-              </div>
-            )}
           </article>
         );
       })}
@@ -140,10 +128,7 @@ export default function Messages({
           }}
           className="flex items-start gap-4"
         >
-          <div className="bg-primary text-primary-foreground mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none">
-            <Bot className="h-5 w-5" />
-          </div>
-          <div className="bg-muted rounded-lg p-4 text-sm">
+          <div className="rounded-lg p-4 text-sm">
             <div className="typing-indicator flex gap-1">
               <span className="animate-bounce delay-0"></span>
               <span className="animate-bounce delay-150"></span>
