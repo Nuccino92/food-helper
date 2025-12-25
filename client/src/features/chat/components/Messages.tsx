@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Message as MessageType } from "../hooks/useChat";
+import type { Message } from "../hooks/useChat";
 import { cn } from "@/lib/utils";
 import { Bot, User } from "lucide-react";
 
@@ -9,7 +9,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface MessageListProps {
-  messages: MessageType[];
+  messages: Message[];
   isWaitingForResponse: boolean;
 }
 
