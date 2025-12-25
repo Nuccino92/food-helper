@@ -9,7 +9,7 @@
 - spoonacular
 - edamam
 
---- FIRST 5. look into rending markdown (wzywig)
+5. look into rending markdown (wzywig) (DONE)
 
 - react-syntax-highlighter
 - react-markdown
