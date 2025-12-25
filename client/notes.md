@@ -1,8 +1,3 @@
-setup tanstack router
-https://tanstack.com/router/latest/docs/framework/react/routing/routing-concepts
-
-setup tanstack query
-
 IN VS OUT:
 
 - scan my fridge
