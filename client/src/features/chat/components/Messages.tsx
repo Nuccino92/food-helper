@@ -210,7 +210,7 @@ export default function Messages({
             variant="default"
             size="icon"
             className={cn(
-              "fixed bottom-24 left-1/2 z-50 rounded-full shadow-lg transition-all duration-300",
+              "fixed bottom-28 left-1/2 z-50 rounded-full shadow-lg transition-all duration-300",
               "-translate-x-1/2",
               showScrollButton
                 ? "translate-y-0 opacity-100"
