@@ -315,29 +315,45 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
   }
 }
 
+/* 1. Set the basic dimensions */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px; /* Width of the entire scrollbar */
+  width: 8px;
 }
 
+/* 2. Track is always transparent */
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent; /* Color of the tracking area */
+  background: transparent;
 }
 
+/* 3. Thumb is TRANSPARENT by default (invisible) */
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #555; /* Color of the scrollbar thumb */
-  border-radius: 10px; /* Roundness of the scrollbar thumb */
-  border: 2px solid transparent; /* Creates padding around thumb */
+  background-color: transparent;
+  border-radius: 10px;
+  border: 2px solid transparent;
   background-clip: content-box;
+  transition: background-color 0.3s; /* Note: Transitions on scrollbars work in some browsers, but not all */
 }
 
+/* 4. Thumb becomes visible when HOVERING the container */
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #555; /* The visible color */
+}
+
+/* 5. Optional: Darker on direct hover of the scrollbar itself */
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #777; /* Color of the thumb on hover */
+  background-color: #777;
 }
 
-/* For Firefox */
+/* Firefox Support */
 .custom-scrollbar {
-  scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: #555 transparent; /* thumb-color track-color */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent; /* thumb track */
+  transition: scrollbar-color 0.3s;
+}
+
+/* Firefox: Show on hover */
+.custom-scrollbar:hover {
+  scrollbar-color: #555 transparent;
 }
 
 .typing-indicator span {

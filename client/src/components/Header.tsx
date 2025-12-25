@@ -9,9 +9,16 @@ export default function Header() {
   const isDark = theme === "dark";
 
   return (
-    <header className="flex h-(--header-height) w-screen items-center justify-between border-b p-4">
+    <header className="dark:bg-muted flex h-(--header-height) w-screen items-center justify-between border-b p-4">
       {/* Left side header */}
-      <h1 className="text-xl font-bold">MY APP NAME</h1>
+      <Button
+        variant="ghost"
+        className="h-auto p-0 text-xl font-bold hover:bg-transparent"
+        onClick={() => window.location.reload()}
+        aria-label="Reload application"
+      >
+        <h1>MY APP NAME</h1>
+      </Button>
 
       {/* Right side header */}
       <div className="flex items-center gap-x-2">

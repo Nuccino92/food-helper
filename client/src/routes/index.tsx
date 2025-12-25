@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <div className="bg-muted/50 flex h-screen w-screen flex-col items-center">
+    <div className="dark:bg-muted/50 flex h-screen w-screen flex-col items-center">
       <Header />
       <ChatInterface />
     </div>

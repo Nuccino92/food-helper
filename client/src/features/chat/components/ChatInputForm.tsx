@@ -32,24 +32,25 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
   };
 
   return (
-    <div className="bg-background rounded-2xl border-t p-4">
-      <div className="mx-auto max-w-3xl">
+    <div className="dark:bg-muted/50 rounded-2xl border-t p-4 shadow-md">
+      <div className="">
         {/* Add the onSubmit handler to the form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-background relative flex w-full items-end rounded-full"
+          className="relative flex w-full items-end rounded-full"
         >
-          <div className="mx-2 flex-1">
+          <div className="mx-2 w-full">
             <TextareaAutosize
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown} // Add the keydown handler
               maxRows={12}
               minRows={1}
-              placeholder="Message..."
+              placeholder="Ask Miso..."
               className={cn(
-                `custom-scrollbar`,
-                "placeholder:text-muted-foreground flex w-full resize-none border-0 bg-transparent p-2 text-base focus-visible:ring-0 focus-visible:ring-offset-0",
+                "custom-scrollbar",
+                "placeholder:text-muted-foreground flex w-full resize-none border-0! bg-transparent p-2 text-base",
+                "focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
               )}
             />
           </div>
@@ -58,7 +59,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
             <Button
               type="submit"
               size="icon"
-              className="rounded-lg bg-white hover:bg-gray-200"
+              className="rounded-lg bg-gray-200 hover:bg-gray-100 dark:bg-white"
               disabled={!inputValue.trim() || isLoading} // Also disable while loading
             >
               <Send className="h-5 w-5 text-black" />

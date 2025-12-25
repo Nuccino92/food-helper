@@ -15,7 +15,7 @@ export default function ChatInterface() {
     <div
       className={cn(
         isChatEmpty ? "justify-center" : "",
-        "flex h-full w-screen flex-1 flex-col overflow-hidden py-4 2xl:max-w-3xl",
+        "flex h-full w-screen flex-1 flex-col overflow-hidden py-4 sm:px-10 xl:max-w-2xl xl:px-0! 2xl:max-w-3xl",
       )}
     >
       {isChatEmpty ? (
@@ -58,14 +58,17 @@ function WithMessage({
           isWaitingForResponse={isWaitingForResponse}
         />
       </div>
-      <ChatInputForm onSend={sendMessage} isLoading={isLoading} />
+
+      <div className="px-4">
+        <ChatInputForm onSend={sendMessage} isLoading={isLoading} />{" "}
+      </div>
     </>
   );
 }
 
 function EmptyChat({ isLoading, sendMessage }: ChildProps) {
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center px-2">
       <div className="relative w-full -translate-y-[50%]">
         <div className="space-y-6">
           <p className="text-muted-foreground text-center text-3xl font-medium">

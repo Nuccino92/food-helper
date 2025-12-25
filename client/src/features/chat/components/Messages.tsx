@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import type { Message } from "../hooks/useChat";
-import { cn } from "@/lib/utils";
+import { ArrowDown } from "lucide-react";
+import { createPortal } from "react-dom";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+import type { Message } from "../hooks/useChat";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface MessageListProps {
   messages: Message[];
@@ -22,12 +26,13 @@ export default function Messages({
   const lastUserMessageRef = useRef<HTMLDivElement>(null);
   const [lastUserMessageHeight, setLastUserMessageHeight] = useState(0);
 
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
   const isAssistantReplying =
     isWaitingForResponse &&
     messages.length > 0 &&
     messages[messages.length - 1].role === "assistant";
 
-  // Find the last user message
   const lastUserMessageIndex = messages.findLastIndex((m) => m.role === "user");
 
   useEffect(() => {
@@ -36,6 +41,63 @@ export default function Messages({
       setLastUserMessageHeight(height);
     }
   }, [messages]);
+
+  // Scroll Detection Logic
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement | Document;
+      let scrollTop = 0;
+      let scrollHeight = 0;
+      let clientHeight = 0;
+
+      if (target === document) {
+        scrollTop = window.scrollY;
+        scrollHeight = document.documentElement.scrollHeight;
+        clientHeight = window.innerHeight;
+      } else {
+        const el = target as HTMLElement;
+        scrollTop = el.scrollTop;
+        scrollHeight = el.scrollHeight;
+        clientHeight = el.clientHeight;
+      }
+
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      // Threshold 100px
+      setShowScrollButton(distanceFromBottom > 100);
+    };
+
+    let scrollContainer: HTMLElement | Window = window;
+    let parent = bottomRef.current?.parentElement;
+
+    // Find scrollable parent
+    while (parent) {
+      const style = window.getComputedStyle(parent);
+      if (style.overflowY === "auto" || style.overflowY === "scroll") {
+        scrollContainer = parent;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    // Check initial state
+    if (scrollContainer instanceof HTMLElement) {
+      handleScroll({ target: scrollContainer } as unknown as Event);
+    } else {
+      handleScroll({ target: document } as unknown as Event);
+    }
+
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+    setShowScrollButton(false);
+  };
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -49,7 +111,7 @@ export default function Messages({
   }, [messages.length, isWaitingForResponse]);
 
   return (
-    <div className="overflow-anchor-none flex flex-col space-y-6 px-4">
+    <div className="overflow-anchor-none relative flex flex-col space-y-6 px-4">
       {messages.map((message, index) => {
         const isUser = message.role === "user";
         const isLastMessage = index === messages.length - 1;
@@ -139,6 +201,28 @@ export default function Messages({
       )}
 
       <div ref={bottomRef} className="mt-5 h-px w-full" />
+
+      {/* Scroll Button */}
+      {/* user portal to not interfere with dynamic heights*/}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <Button
+            variant="default"
+            size="icon"
+            className={cn(
+              "fixed bottom-24 left-1/2 z-50 rounded-full shadow-lg transition-all duration-300",
+              "-translate-x-1/2",
+              showScrollButton
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-10 opacity-0",
+            )}
+            onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>,
+          document.body,
+        )}
     </div>
   );
 }
