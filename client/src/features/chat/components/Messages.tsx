@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Message as MessageType } from "../hooks/useChat";
 import { cn } from "@/lib/utils";
 import { Bot, User } from "lucide-react";
@@ -13,18 +13,30 @@ interface MessageListProps {
   isWaitingForResponse: boolean;
 }
 
-const UI_OFFSET = 300;
+const UI_OFFSET = 230;
 
 export default function Messages({
   messages,
   isWaitingForResponse,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const lastUserMessageRef = useRef<HTMLDivElement>(null);
+  const [lastUserMessageHeight, setLastUserMessageHeight] = useState(0);
 
   const isAssistantReplying =
     isWaitingForResponse &&
     messages.length > 0 &&
     messages[messages.length - 1].role === "assistant";
+
+  // Find the last user message
+  const lastUserMessageIndex = messages.findLastIndex((m) => m.role === "user");
+
+  useEffect(() => {
+    if (lastUserMessageRef.current) {
+      const height = lastUserMessageRef.current.offsetHeight;
+      setLastUserMessageHeight(height);
+    }
+  }, [messages]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -42,6 +54,7 @@ export default function Messages({
       {messages.map((message, index) => {
         const isUser = message.role === "user";
         const isLastMessage = index === messages.length - 1;
+        const isLastUserMessage = index === lastUserMessageIndex;
 
         if (isAssistantReplying && isLastMessage) {
           return null;
@@ -49,12 +62,15 @@ export default function Messages({
 
         const heightStyle =
           !isUser && isLastMessage
-            ? { minHeight: `calc(100dvh - ${UI_OFFSET}px)` }
+            ? {
+                minHeight: `calc(100dvh - ${UI_OFFSET + lastUserMessageHeight + 24}px)`,
+              }
             : undefined;
 
         return (
           <article
             key={index}
+            ref={isLastUserMessage ? lastUserMessageRef : null}
             style={heightStyle}
             className={cn(
               "flex scroll-mt-16 items-start gap-4 transition-all",
@@ -119,7 +135,9 @@ export default function Messages({
 
       {isAssistantReplying && (
         <article
-          style={{ minHeight: `calc(100dvh - ${UI_OFFSET}px)` }}
+          style={{
+            minHeight: `calc(100dvh - ${UI_OFFSET + lastUserMessageHeight + 24}px)`,
+          }}
           className="flex items-start gap-4"
         >
           <div className="bg-primary text-primary-foreground mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none">
