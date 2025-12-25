@@ -8,7 +8,7 @@ import { Message } from "../types/chat";
 
 const MOCK_RESPONSE_PARTS = [
   // Chunk 1: Intro + Header (###)
-  "Of course! Based on your ingredients, here is a great recipe:\n\n### 🐔 Classic Chicken & Pepper Stir-Fry\n\n",
+  "Of course! Based on your ingredients, here is a great recipe:\n\n# 🐔 Classic Chicken & Pepper Stir-Fry\n\n",
 
   // Chunk 2: Bold text (**) and a bulleted list (-)
   "**Ingredients Needed:**\n- 1 lb Chicken breast (cubed)\n- 2 Bell peppers (sliced)\n- Soy sauce & garlic\n\n",
