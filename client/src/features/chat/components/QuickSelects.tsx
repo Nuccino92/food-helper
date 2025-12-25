@@ -16,7 +16,7 @@ export default function QuickSelects({ prompts, onSelect }: QuickSelectsProps) {
           <Button
             key={prompt.title}
             variant="outline"
-            className="flex h-full justify-start! p-4 whitespace-normal"
+            className="dark:border-input flex h-full justify-start! border-gray-200 p-4 whitespace-normal shadow"
             onClick={() => onSelect(prompt.prompt)}
           >
             <Icon className="mr-2 h-5 w-5" />
