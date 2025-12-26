@@ -72,7 +72,7 @@ function EmptyChat({ isLoading, sendMessage }: ChildProps) {
       <div className="relative w-full -translate-y-[50%]">
         <div className="space-y-6">
           <p className="text-muted-foreground text-center text-3xl font-medium">
-            How can I help you?
+            How may I help you?
           </p>
           <QuickSelects prompts={QUICK_SELECT_PROMPTS} onSelect={sendMessage} />
         </div>
