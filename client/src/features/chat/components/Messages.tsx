@@ -7,12 +7,16 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-import type { Message } from "../hooks/useChat";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import type { UIMessage } from "@ai-sdk/react";
+
+/**
+ * TODO: figure out why its not scrolling properly after the 2nd message
+ */
 
 interface MessageListProps {
-  messages: Message[];
+  messages: UIMessage[];
   isWaitingForResponse: boolean;
 }
 
@@ -42,7 +46,7 @@ export default function Messages({
     }
   }, [messages]);
 
-  // Scroll Detection Logic
+  // Scroll Detection Logic for scroll to bottom button
   useEffect(() => {
     const handleScroll = (e: Event) => {
       const target = e.target as HTMLElement | Document;
@@ -117,6 +121,12 @@ export default function Messages({
         const isLastMessage = index === messages.length - 1;
         const isLastUserMessage = index === lastUserMessageIndex;
 
+        const content = message.parts
+          .filter((part: { type: string }) => part.type === "text")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((part: any) => part.text)
+          .join("");
+
         if (isAssistantReplying && isLastMessage) {
           return null;
         }
@@ -155,8 +165,8 @@ export default function Messages({
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-                    code({ node, inline, className, children, ...props }: any) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    code({ inline, className, children, ...props }: any) {
                       const match = /language-(\w+)/.exec(className || "");
                       return !inline && match ? (
                         <SyntaxHighlighter
@@ -175,7 +185,7 @@ export default function Messages({
                     },
                   }}
                 >
-                  {message.content}
+                  {content}
                 </ReactMarkdown>
               </div>
             </div>
@@ -200,8 +210,6 @@ export default function Messages({
         </article>
       )}
 
-      <div ref={bottomRef} className="mt-5 h-px w-full" />
-
       {/* Scroll Button */}
       {/* user portal to not interfere with dynamic heights*/}
       {typeof document !== "undefined" &&
@@ -223,6 +231,8 @@ export default function Messages({
           </Button>,
           document.body,
         )}
+
+      <div ref={bottomRef} className="mt-5 h-px w-full" />
     </div>
   );
 }

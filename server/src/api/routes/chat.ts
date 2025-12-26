@@ -1,42 +1,77 @@
 import { Router, Request, Response } from "express";
-// IMPORTANT: Make sure to import the new service function
-import { mockLlmSseStream } from "../../services/chat.service";
-import { Message } from "../../types/chat";
+import { streamText, convertToModelMessages, simulateReadableStream } from "ai";
+import { MockLanguageModelV3 } from "ai/test";
 
 const router = Router();
+
+// 1. Mock Model Definition
+const mockModel = new MockLanguageModelV3({
+  modelId: "mock-test-model",
+  doStream: async () => {
+    const responseText =
+      "Of course! Based on your ingredients, here is a great recipe:\n\n# 🐔 Classic Chicken & Pepper Stir-Fry\n\n**Ingredients Needed:**\n- 1 lb Chicken breast (cubed)\n- 2 Bell peppers (sliced)\n- Soy sauce & garlic\n\n**Instructions:**\n1. Heat oil in a pan over medium-high heat.\n2. Add the **chicken** and cook until golden brown.\n3. Toss in the peppers and stir-fry for 3-4 minutes.\n4. Pour in the sauce and serve over rice.\n\nEnjoy your meal!";
+
+    // Split text into chunks
+    const textChunks = responseText.split(/(?=[ ])|(?<=[ ])/g);
+
+    // Build chunks array in the format simulateReadableStream expects
+    const chunks: any[] = [{ type: "text-start", id: "text-1" }];
+
+    for (const chunk of textChunks) {
+      chunks.push({ type: "text-delta", id: "text-1", delta: chunk });
+    }
+
+    chunks.push(
+      { type: "text-end", id: "text-1" },
+      {
+        type: "finish",
+        finishReason: "stop",
+        logprobs: undefined,
+        usage: { inputTokens: 10, outputTokens: 100, totalTokens: 110 },
+      }
+    );
+
+    return {
+      stream: simulateReadableStream({
+        chunks,
+        chunkDelayInMs: 20,
+      }),
+      rawCall: { rawPrompt: null, rawSettings: {} },
+    };
+  },
+});
 
 export default (app: Router) => {
   app.use("/chat", router);
 
-  // We are keeping this as a POST route to align with real LLM APIs
-  // that need to receive a large conversation history in the body.
   router.post("/stream", async (req: Request, res: Response) => {
     try {
-      const { messages }: { messages: Message[] } = req.body;
-      if (!messages) {
-        return res.status(400).json({ error: "Messages are required" });
+      const { messages } = req.body;
+
+      const result = streamText({
+        model: mockModel,
+        messages: await convertToModelMessages(messages),
+      });
+
+      const response = result.toUIMessageStreamResponse();
+
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+
+      if (response.body) {
+        const reader = response.body.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
       }
 
-      // --- CRITICAL: Set Headers for Server-Sent Events (SSE) ---
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-      res.flushHeaders(); // Flush the headers to establish the connection
-
-      // Get the async generator from our NEW SSE service
-      const stream = mockLlmSseStream(messages);
-
-      // Pipe the formatted SSE events to the response
-      for await (const sseEvent of stream) {
-        res.write(sseEvent);
-      }
-
-      // We don't explicitly call res.end(). The 'end' event will signal the client
-      // to close the connection. The connection will also close if the client disconnects.
+      res.end();
     } catch (error) {
-      console.error("Error in chat stream:", error);
-      // Can't send a 500 header here as they are already sent.
-      // Just log it and the connection will close.
+      console.error("Error:", error);
+      if (!res.headersSent) res.status(500).end();
     }
   });
 };

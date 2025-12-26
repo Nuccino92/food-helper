@@ -1,15 +1,25 @@
 import { cn } from "@/lib/utils";
+import type { UIMessage } from "ai";
 
 import { ChatInputForm } from "./ChatInputForm";
 import Messages from "./Messages";
 import QuickSelects from "./QuickSelects";
 import { QUICK_SELECT_PROMPTS } from "@/data/prompts";
-import { useChat, type Message as MessageType } from "../hooks/useChat";
+import { useChatSession } from "../hooks/useChatSesstion";
 
 export default function ChatInterface() {
-  const { messages, isLoading, isWaitingForResponse, sendMessage } = useChat();
+  const { messages, status, sendMessage } = useChatSession();
 
   const isChatEmpty = messages.length === 0;
+  const isLoading = status === "submitted" || status === "streaming";
+  const isWaitingForResponse = status === "submitted";
+
+  const handleSendMessage = (content: string) => {
+    sendMessage({
+      role: "user",
+      parts: [{ type: "text", text: content }],
+    });
+  };
 
   return (
     <div
@@ -23,22 +33,23 @@ export default function ChatInterface() {
           messages={messages}
           isLoading={isLoading}
           isWaitingForResponse={isWaitingForResponse}
-          sendMessage={sendMessage}
+          sendMessage={handleSendMessage}
         />
       ) : (
         <WithMessage
           messages={messages}
           isLoading={isLoading}
           isWaitingForResponse={isWaitingForResponse}
-          sendMessage={sendMessage}
+          sendMessage={handleSendMessage}
         />
       )}
     </div>
   );
 }
 
+// Update the Type Definition to use the Vercel SDK Message type
 type ChildProps = {
-  messages: MessageType[];
+  messages: UIMessage[];
   isLoading: boolean;
   isWaitingForResponse: boolean;
   sendMessage: (message: string) => void;
@@ -52,7 +63,8 @@ function WithMessage({
 }: ChildProps) {
   return (
     <>
-      <div className={cn("custom-scrollbar flex-1 overflow-y-auto")}>
+      <div className={cn("custom-scrollbar flex-1 overflow-y-scroll")}>
+        {/* Ensure your Messages component can handle the 'Message' type from 'ai' */}
         <Messages
           messages={messages}
           isWaitingForResponse={isWaitingForResponse}
@@ -60,7 +72,8 @@ function WithMessage({
       </div>
 
       <div className="px-4">
-        <ChatInputForm onSend={sendMessage} isLoading={isLoading} />{" "}
+        {/* Passing the bridge function here */}
+        <ChatInputForm onSend={sendMessage} isLoading={isLoading} />
       </div>
     </>
   );
@@ -74,6 +87,7 @@ function EmptyChat({ isLoading, sendMessage }: ChildProps) {
           <p className="text-muted-foreground text-center text-3xl font-medium">
             How may I help you?
           </p>
+          {/* Quick selects also work with the bridge function */}
           <QuickSelects prompts={QUICK_SELECT_PROMPTS} onSelect={sendMessage} />
         </div>
 
