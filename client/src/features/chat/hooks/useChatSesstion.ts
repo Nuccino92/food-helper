@@ -7,7 +7,7 @@ export function useChatSession() {
     transport: new DefaultChatTransport({
       api: `${import.meta.env.VITE_API_URL}/chat/stream`,
     }),
-    experimental_throttle: 50,
+    // experimental_throttle: 100,
 
     onError: (error) => {
       //console.error("Chat Error:", error);
