@@ -37,7 +37,7 @@ const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
           "rounded-lg p-4 text-sm leading-relaxed",
           isUser
             ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground",
+            : "text-muted-foreground",
         )}
       >
         <div
