@@ -6,15 +6,18 @@ export function useChatSession() {
   const chat = useChat({
     transport: new DefaultChatTransport({
       api: `${import.meta.env.VITE_API_URL}/chat/stream`,
+      body: {
+        userLocalTime: new Date().toLocaleString(),
+      },
     }),
     // experimental_throttle: 100,
 
     onError: (error) => {
-      //console.error("Chat Error:", error);
+      console.error("Chat Error:", error);
     },
 
     onFinish: (message) => {
-      //  console.log("✅ Stream finished:", message);
+      console.log("✅ Stream finished:", message);
     },
   });
 

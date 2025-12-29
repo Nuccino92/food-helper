@@ -13,17 +13,17 @@ export type QuickSelectPrompt = {
 export const QUICK_SELECT_PROMPTS: QuickSelectPrompt[] = [
   {
     title: "Surprise Me!",
-    prompt: "Surprise me with a dinner idea.",
+    prompt: "Surprise me with something.",
     icon: Gift,
   },
   {
     title: "Something Quick",
-    prompt: "I need a quick meal, Miso.",
+    prompt: "I need something quick to eat.",
     icon: Zap,
   },
   {
     title: "Healthy Choice",
-    prompt: "I'm looking for a healthy option tonight.",
+    prompt: "I'm looking for a healthy option.",
     icon: Leaf,
   },
   {
