@@ -1,10 +1,11 @@
 // src/personas/index.ts
 import { BASE_RULES } from "./base-rules";
-import { misoPersona, gordonPersona } from "./personas";
+import { misoPersona, gordonPersona, sanchoPersona } from "./personas";
 
 const personas: Record<string, typeof misoPersona> = {
-  miso: misoPersona,
-  gordon: gordonPersona,
+  "assistant-miso": misoPersona,
+  "assistant-gordon": gordonPersona,
+  "assistant-sancho": sanchoPersona,
 };
 
 export function buildSystemPrompt(personaId: string, userLocalTime: string) {

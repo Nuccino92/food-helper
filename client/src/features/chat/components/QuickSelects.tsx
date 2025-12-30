@@ -16,7 +16,7 @@ export default function QuickSelects({ prompts, onSelect }: QuickSelectsProps) {
           <Button
             key={prompt.title}
             variant="outline"
-            className="dark:border-input flex h-full border-gray-200 p-4 whitespace-normal shadow sm:justify-start!"
+            className="dark:border-input dark:bg-muted flex h-full border-gray-200 p-4 whitespace-normal shadow sm:justify-start!"
             onClick={() => onSelect(prompt.prompt)}
           >
             <div className="hidden sm:block">

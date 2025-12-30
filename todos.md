@@ -1,21 +1,19 @@
-1. need to run ai response in the background and have the front end collect, or else when the stream shuts down it causes issues
-
-2. clean up UI
-
-3. Connect backend to ai api
-
-4. Look into RAG
+1. Look into data retrieval
 
 - spoonacular
 - edamam
 
-5. look into rending markdown (wzywig) (DONE)
+2. ensure it works properly ^
+3. ADJUST AI, ITS TRASH
 
-- react-syntax-highlighter
-- react-markdown
-
-6. look into features
+4. look into features
 
 - scan my fridge
 - ordering/resturant recommendations
 - calorie/macro goals
+
+4. handle nice scroll UX
+
+5. ui imnprovements
+
+- placeholder text changes based on assistant, also how may i help you text

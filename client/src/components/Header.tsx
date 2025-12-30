@@ -2,14 +2,25 @@ import { Sun, Moon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeProvider/hooks";
+import { PERSONAS, PersonaSelector } from "./PersonaSelector";
+import { usePersona } from "@/context/PersonaProvider/hooks";
+import type { Persona } from "@/context/PersonaProvider/types";
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
+  const { persona, setPersona } = usePersona();
+
+  const selectedPersona =
+    PERSONAS.find((p) => p.value === persona) ?? PERSONAS[0];
 
   const isDark = theme === "dark";
 
+  function handlePersonaChange(selectedPersona: Persona) {
+    setPersona(selectedPersona);
+  }
+
   return (
-    <header className="dark:bg-muted flex h-(--header-height) w-screen items-center justify-between border-b p-4">
+    <header className="dark:bg-muted flex h-(--header-height) w-screen items-center justify-between border-b bg-white p-4">
       {/* Left side header */}
       <Button
         variant="ghost"
@@ -35,8 +46,11 @@ export default function Header() {
             <Moon className="h-9 w-9" strokeWidth={3} />
           )}
         </Button>
-        {/* User menu */}
-        <div>x</div>
+
+        <PersonaSelector
+          selectedPersona={selectedPersona}
+          onPersonaChange={handlePersonaChange}
+        />
       </div>
     </header>
   );

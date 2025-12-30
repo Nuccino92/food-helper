@@ -384,3 +384,32 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
     transform: translateY(-5px);
   }
 }
+
+/* Miso Aura */
+.aura-assistant-miso {
+  /* 150% width means it stretches way past the screen edges */
+  background-image: radial-gradient(
+    ellipse 60% 100% at 50% -20%,
+    rgba(64, 224, 208, 0.25) 0%,
+    transparent 80%
+  );
+}
+
+/* Gordon: Wide Heat Haze */
+.aura-assistant-gordon {
+  background-image: radial-gradient(
+    ellipse 60% 100% at 50% -20%,
+    rgba(220, 20, 60, 0.3) 0%,
+    transparent 80%
+  );
+}
+
+/* Sancho: Wide Stale Light */
+.aura-assistant-sancho {
+  /* Kept the "Muddy Olive" but spread it out */
+  background-image: radial-gradient(
+    ellipse 60% 100% at 50% -20%,
+    rgba(128, 128, 0, 0.25) 0%,
+    transparent 80%
+  );
+}

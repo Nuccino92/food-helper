@@ -6,6 +6,7 @@ import Messages from "./Messages";
 import QuickSelects from "./QuickSelects";
 import { QUICK_SELECT_PROMPTS } from "@/data/prompts";
 import { useChatSession } from "../hooks/useChatSesstion";
+import { usePersona } from "@/context/PersonaProvider/hooks";
 
 export default function ChatInterface() {
   const { messages, status, sendMessage } = useChatSession();
@@ -80,12 +81,20 @@ function WithMessage({
 }
 
 function EmptyChat({ isLoading, sendMessage }: ChildProps) {
+  const { persona } = usePersona();
+
+  const welcomeMessage = {
+    "assistant-miso": "How may I help you?",
+    "assistant-gordon": "Shall we find something edible?",
+    "assistant-sancho": "Can we make this quick?",
+  };
+
   return (
     <div className="flex h-full w-full items-center justify-center px-2">
       <div className="relative w-full -translate-y-[50%]">
         <div className="space-y-6">
           <p className="text-muted-foreground text-center text-3xl font-medium">
-            How may I help you?
+            {welcomeMessage[persona]}
           </p>
           {/* Quick selects also work with the bridge function */}
           <QuickSelects prompts={QUICK_SELECT_PROMPTS} onSelect={sendMessage} />

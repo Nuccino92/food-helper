@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, type KeyboardEvent, type FormEvent } from "react"; // Import KeyboardEvent and FormEvent
 import { cn } from "@/lib/utils";
+import { usePersona } from "@/context/PersonaProvider/hooks";
 
 interface ChatInputFormProps {
   onSend: (message: string) => void;
@@ -10,19 +11,17 @@ interface ChatInputFormProps {
 }
 
 export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
+  const { persona } = usePersona();
   const [inputValue, setInputValue] = useState("");
 
-  // 1. Create a submit handler
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault(); // Prevent the form from reloading the page
     if (!inputValue.trim() || isLoading) return;
 
     onSend(inputValue);
-    // 2. Clear the input after sending
     setInputValue("");
   };
 
-  // 3. Create a keydown handler for "Enter" to send
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Check if Enter is pressed and Shift is NOT pressed
     if (e.key === "Enter" && !e.shiftKey) {
@@ -31,8 +30,14 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
     }
   };
 
+  const placeholder = {
+    "assistant-miso": "Ask Miso...",
+    "assistant-gordon": "Ask Gordon...",
+    "assistant-sancho": "Ask Sancho",
+  };
+
   return (
-    <div className="dark:bg-muted/50 rounded-2xl border-t p-4 shadow-md">
+    <div className="rounded-2xl border-t bg-white p-4 shadow-md">
       <div className="">
         {/* Add the onSubmit handler to the form */}
         <form
@@ -46,11 +51,11 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
               onKeyDown={handleKeyDown} // Add the keydown handler
               maxRows={12}
               minRows={1}
-              placeholder="Ask Miso..."
+              placeholder={placeholder[persona]}
               className={cn(
                 "custom-scrollbar",
-                "placeholder:text-muted-foreground flex w-full resize-none border-0! bg-transparent p-2 text-base",
-                "focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
+                "placeholder:text-muted-foreground flex w-full resize-none border-0! bg-transparent p-2 placeholder:font-medium",
+                "dark:text-primary-foreground focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
               )}
             />
           </div>
@@ -59,7 +64,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
             <Button
               type="submit"
               size="icon"
-              className="rounded-lg bg-gray-200 hover:bg-gray-100 dark:bg-white"
+              className="rounded-lg bg-gray-200 hover:bg-gray-100"
               disabled={!inputValue.trim() || isLoading} // Also disable while loading
             >
               <Send className="h-5 w-5 text-black" />
