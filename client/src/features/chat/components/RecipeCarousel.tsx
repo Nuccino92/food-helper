@@ -45,7 +45,7 @@ export function RecipeCarousel({ recipes, query }: RecipeCarouselProps) {
             href={recipe.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group bg-card text-card-foreground hover:border-primary/50 relative w-[260px] flex-none snap-center overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
+            className="group bg-card text-card-foreground dark:hover:border-primary/50 relative w-[260px] flex-none snap-center overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
           >
             {/* Image */}
             <div className="relative aspect-4/3 w-full overflow-hidden">
