@@ -313,6 +313,9 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .animate-shine {
+    animation: shine 5s linear infinite;
+  }
 }
 
 /* 1. Set the basic dimensions */
@@ -382,6 +385,15 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
   }
   30% {
     transform: translateY(-5px);
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
   }
 }
 
