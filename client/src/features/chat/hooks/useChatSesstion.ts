@@ -14,7 +14,7 @@ export function useChatSession() {
         personaId: persona ?? null,
       },
     }),
-    // experimental_throttle: 100,
+    experimental_throttle: 50,
 
     onError: (error) => {
       console.error("Chat Error:", error);
