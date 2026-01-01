@@ -16,7 +16,7 @@ function HomePage() {
       className={`aura-${persona} flex h-screen w-screen flex-col items-center`}
     >
       <Header />
-      <ChatInterface />
+      <ChatInterface key={persona} />
     </div>
   );
 }

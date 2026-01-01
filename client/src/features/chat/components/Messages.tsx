@@ -17,8 +17,14 @@ export default function Messages({
 
   return (
     <div className="overflow-anchor-none relative flex flex-col space-y-6 px-4">
-      {messages.map((message) => {
-        return <ChatMessage key={message.id} message={message} />;
+      {messages.map((message, index) => {
+        return (
+          <ChatMessage
+            key={message.id}
+            message={message}
+            isFirstMessage={index === 0 ? true : false}
+          />
+        );
       })}
 
       {isAssistantReplying && (
