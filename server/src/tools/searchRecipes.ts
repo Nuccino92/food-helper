@@ -16,48 +16,21 @@ export const searchRecipesTool = tool({
   // The AI reads this string to decide IF and WHEN to call this tool.
   // We explicitly tell it to wait for constraints to prevent "hallucinated" searches.
   description: `
-    Call this tool when the user asks for a recipe or meal suggestion.
-    You MUST have at least two constraints (e.g. "Chicken" + "Italian") before calling this.
-    Returns a list of recipes with titles, images, links, and summaries.
+    Call this tool ONLY when the user has agreed to a specific food or asking for a recipe.
+    Returns recipe metadata (Title, Time, Health Score) and UI links.
+    Do NOT read the raw links or image URLs in your response. 
+    Use the 'readyInMinutes' and 'healthScore' to color your commentary (e.g. "It's super fast" or "It's a bit indulgent").
   `,
 
   // 2. Input Schema (Zod)
   // This defines the strict JSON structure the AI must generate to call this function.
   inputSchema: z.object({
-    query: z
-      .string()
-      .describe("The main food query (e.g. 'pasta', 'stew', 'salad')"),
-
-    includeIngredients: z
-      .string()
-      .optional()
-      .describe(
-        "Comma-separated list of ingredients the user HAS (e.g. 'chicken, lemon'). Critical for 'fridge' searches."
-      ),
-
-    cuisine: z
-      .string()
-      .optional()
-      .describe("The cuisine type (e.g. 'Italian', 'Thai', 'American')"),
-
-    diet: z
-      .string()
-      .optional()
-      .describe(
-        "Dietary restriction (e.g. 'vegetarian', 'vegan', 'gluten free', 'ketogenic')"
-      ),
-
-    maxReadyTime: z
-      .number()
-      .optional()
-      .describe("Max prep/cook time in minutes. useful for 'quick' requests."),
-
-    type: z
-      .string()
-      .optional()
-      .describe(
-        "The type of meal (e.g. 'breakfast', 'main course', 'snack', 'dessert')"
-      ),
+    query: z.string().describe("The main food query (e.g. 'pasta', 'stew')"),
+    includeIngredients: z.string().optional(),
+    cuisine: z.string().optional(),
+    diet: z.string().optional(),
+    maxReadyTime: z.number().optional(),
+    type: z.string().optional(),
   }),
 
   // 3. Execution Logic
@@ -81,7 +54,7 @@ export const searchRecipesTool = tool({
     const params = new URLSearchParams({
       apiKey,
       query,
-      number: "4", // LIMIT: Keep low to save LLM context tokens (and screen space).
+      number: "3", // LIMIT: Keep low to save LLM context tokens (and screen space).
       addRecipeInformation: "true", // REQUIRED: This gives us the 'sourceUrl' and 'image'.
       fillIngredients: "false", // OPTIMIZATION: We don't need detailed grocery lists here, saves bandwidth.
       instructionsRequired: "true", // QUALITY CONTROL: Only show recipes that actually have steps.
@@ -116,14 +89,14 @@ export const searchRecipesTool = tool({
         id: r.id,
         title: r.title,
         readyInMinutes: r.readyInMinutes,
-        servings: r.servings,
+        healthScore: r.healthScore, // 0-100 score.
         image: r.image, // High-res image for the UI card
         sourceUrl: r.sourceUrl, // The link to the blog/site (CRITICAL for user trust)
 
         // Clean up the summary: Remove HTML tags (<b>, <a>) and truncate to 150 chars.
         summary: r.summary
-          ? r.summary.replace(/<[^>]*>?/gm, "").slice(0, 150) + "..."
-          : "No summary available.",
+          ? r.summary.replace(/<[^>]*>?/gm, "").split(".")[0] + "."
+          : "A classic preparation of this dish.",
       }));
 
       // -- Step E: Handle Empty States --
@@ -131,7 +104,7 @@ export const searchRecipesTool = tool({
         return {
           success: false,
           message:
-            "No recipes found matching these strict criteria. Suggest the user loosen their filters (e.g. remove dietary restrictions or increase time).",
+            "No recipes found. Tell the user to be less specific or remove filters.",
         };
       }
 
@@ -145,7 +118,7 @@ export const searchRecipesTool = tool({
       // Graceful failure: Let the AI know it failed so it can apologize to the user.
       return {
         success: false,
-        message: "Failed to fetch recipes due to a network or API error.",
+        message: "API Error. Apologize to the user.",
       };
     }
   },

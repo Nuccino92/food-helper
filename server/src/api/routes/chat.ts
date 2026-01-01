@@ -15,7 +15,7 @@ export default (app: Router) => {
       const { messages, userLocalTime, personaId } = req.body;
 
       const systemPrompt = buildSystemPrompt(
-        personaId || "miso",
+        personaId || "assistant-miso",
         userLocalTime
       );
 
@@ -26,7 +26,7 @@ export default (app: Router) => {
         messages: await convertToModelMessages(messages),
         tools: {
           searchRecipes: searchRecipesTool,
-          //findRestaurant:findRestaurantsTool
+          findRestaurant: findRestaurantsTool,
         },
       });
 
