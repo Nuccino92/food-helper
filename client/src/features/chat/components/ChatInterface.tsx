@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 
-import { ChatInputForm } from "./ChatInputForm";
+import { ChatInputForm, type ImageData } from "./ChatInputForm";
 import Messages from "./Messages";
 import QuickSelects from "./QuickSelects";
 import { QUICK_SELECT_PROMPTS } from "@/data/prompts";
@@ -15,11 +15,34 @@ export default function ChatInterface() {
   const isLoading = status === "submitted" || status === "streaming";
   const isWaitingForResponse = status === "submitted";
 
-  const handleSendMessage = (content: string) => {
-    sendMessage({
-      role: "user",
-      parts: [{ type: "text", text: content }],
-    });
+  const handleSendMessage = (content: string, images?: ImageData[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parts: any[] = [];
+
+    // Add images first (they appear above text in the message)
+    // Using "file" type with mediaType and url fields - this is how the Vercel AI SDK
+    // handles images via FileUIPart, which convertToModelMessages() properly converts
+    if (images && images.length > 0) {
+      for (const img of images) {
+        parts.push({
+          type: "file",
+          mediaType: img.mimeType,
+          url: img.base64, // Full data URL: "data:image/jpeg;base64,..."
+        });
+      }
+    }
+
+    // Add text if provided
+    if (content.trim()) {
+      parts.push({ type: "text", text: content });
+    }
+
+    if (parts.length > 0) {
+      sendMessage({
+        role: "user",
+        parts,
+      });
+    }
   };
 
   return (
@@ -53,7 +76,7 @@ type ChildProps = {
   messages: UIMessage[];
   isLoading: boolean;
   isWaitingForResponse: boolean;
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string, images?: ImageData[]) => void;
 };
 
 function WithMessage({

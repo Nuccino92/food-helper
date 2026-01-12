@@ -6,6 +6,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@ai-sdk/react";
 import { RecipeCarousel } from "./RecipeCarousel";
+import { MessageImages } from "./MessageImage";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -26,7 +27,26 @@ const ChatMessage = memo(function ChatMessage({
         .join("")
     : "";
 
-  // 2. EXTRACT RECIPES
+  // 2. EXTRACT IMAGES (from "file" type parts with image mediaTypes)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const imageParts = message.parts?.filter((part: any) => {
+    // Handle FileUIPart format (type: "file" with image mediaType)
+    if (part.type === "file" && part.mediaType?.startsWith("image/")) {
+      return true;
+    }
+    // Also handle legacy "image" type just in case
+    if (part.type === "image") {
+      return true;
+    }
+    return false;
+  }) || [];
+  const images = imageParts.map((part: any) => ({
+    // FileUIPart uses 'url' field, ImagePart uses 'image' field
+    url: part.url || part.image || (typeof part.data === "string" ? part.data : ""),
+    alt: "Uploaded image",
+  })).filter((img: { url: string }) => img.url);
+
+  // 3. EXTRACT RECIPES
   // We scan 'parts' directly because your JSON shows the data lives there
   // under 'output', not 'result'.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +67,11 @@ const ChatMessage = memo(function ChatMessage({
         !isFirstMessage && isUser && "mt-12",
       )}
     >
+      {/* USER IMAGES */}
+      {isUser && images.length > 0 && (
+        <MessageImages images={images} />
+      )}
+
       {/* TEXT BUBBLE */}
       {content && (
         <div
