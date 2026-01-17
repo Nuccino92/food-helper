@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { streamText, convertToModelMessages, tool } from "ai";
+import { streamText, convertToModelMessages, tool, stepCountIs } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { buildSystemPrompt } from "../../personas";
@@ -22,20 +22,32 @@ export default (app: Router) => {
       // Create searchRecipes tool with seenRecipeIds context injected
       const searchRecipesWithContext = tool({
         description: `
-          Call this tool ONLY when the user has agreed to a specific food or asking for a recipe.
-          Returns recipe metadata (Title, Time, Health Score) and UI links.
-          Do NOT read the raw links or image URLs in your response.
-          Use the 'readyInMinutes' and 'healthScore' to color your commentary (e.g. "It's super fast" or "It's a bit indulgent").
-          Use the 'fullSummary' field to understand the recipe better and make personalized recommendations.
+          Call this tool when the user wants a recipe recommendation.
+
+          YOU ARE A CONFIDENT RECOMMENDER - not a search engine.
+          This tool returns ONE recipe that YOU choose as the best fit.
+
+          YOUR JOB:
+          1. Use the recipe data (title, readyInMinutes, healthScore, fullSummary) to understand the dish
+          2. Write a compelling, personalized recommendation explaining WHY this dish fits their needs
+          3. The recipe card will appear automatically below your text - don't describe the image or link
+          4. End with an escape hatch like "Not feeling it? I can suggest something different."
+
+          FRAMING HEALTH (don't show the score number):
+          - healthScore 80+ → mention it's "lighter" or "pretty healthy"
+          - healthScore 50-79 → say nothing about health
+          - healthScore <50 → call it "indulgent" or "comfort food"
+
+          FRAMING TIME:
+          - <20 min → "super quick"
+          - 20-40 min → "comes together fast"
+          - 40-60 min → mention the time as worth it
+          - >60 min → "a bit of a project but worth it"
 
           SORTING: Choose sort based on user context:
           - "quick dinner", "fast meal" → sort: "time", sortDirection: "asc"
           - "healthy", "nutritious" → sort: "healthiness", sortDirection: "desc"
-          - "cheap", "budget" → sort: "price", sortDirection: "asc"
           - "popular", "best" → sort: "popularity", sortDirection: "desc"
-
-          HEALTHY REQUESTS: When user asks for "healthy" food, interpret based on conversation context.
-          Briefly mention your interpretation (e.g., "Here are some low-carb healthy options").
         `,
         inputSchema: z.object({
           query: z.string().describe("The main food query (e.g. 'pasta', 'stew')"),
@@ -102,28 +114,8 @@ export default (app: Router) => {
             const seenSet = new Set(seenRecipeIds);
             const freshResults = data.results.filter((r: any) => !seenSet.has(r.id));
 
-            // Transform and take first 3 fresh results
-            const results = freshResults.slice(0, 3).map((r: any) => {
-              const cleanSummary = r.summary
-                ? r.summary.replace(/<[^>]*>?/gm, "")
-                : "A classic preparation of this dish.";
-
-              return {
-                id: r.id,
-                title: r.title,
-                readyInMinutes: r.readyInMinutes,
-                healthScore: r.healthScore,
-                image: r.image,
-                sourceUrl: r.sourceUrl,
-                fullSummary: cleanSummary,
-                summary: cleanSummary.length > 150
-                  ? cleanSummary.substring(0, 150) + "..."
-                  : cleanSummary,
-              };
-            });
-
-            if (results.length === 0) {
-              const allFiltered = data.results.length > 0 && freshResults.length === 0;
+            if (freshResults.length === 0) {
+              const allFiltered = data.results.length > 0;
               return {
                 success: false,
                 exhausted: allFiltered,
@@ -133,7 +125,23 @@ export default (app: Router) => {
               };
             }
 
-            return { success: true, recipes: results };
+            // Take the top result as THE recommendation
+            const r = freshResults[0];
+            const cleanSummary = r.summary
+              ? r.summary.replace(/<[^>]*>?/gm, "")
+              : "A classic preparation of this dish.";
+
+            const recipe = {
+              id: r.id,
+              title: r.title,
+              readyInMinutes: r.readyInMinutes,
+              healthScore: r.healthScore,
+              image: r.image,
+              sourceUrl: r.sourceUrl,
+              fullSummary: cleanSummary,
+            };
+
+            return { success: true, recipe };
           } catch (error) {
             console.error("Spoonacular Error:", error);
             return { success: false, message: "API Error. Apologize to the user." };
@@ -149,6 +157,7 @@ export default (app: Router) => {
           searchRecipes: searchRecipesWithContext,
           findRestaurant: findRestaurantsTool,
         },
+        stopWhen: stepCountIs(3), // Allow tool call + response in one turn
       });
 
       const response = result.toUIMessageStreamResponse();

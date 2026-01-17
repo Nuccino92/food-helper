@@ -2,131 +2,163 @@ import { tool } from "ai";
 import { z } from "zod";
 
 /**
- * FIND RESTAURANTS TOOL
- * ---------------------
- * This tool connects to the Yelp Fusion API to find places to "Eat Out."
+ * FIND RESTAURANTS TOOL (Menu Item Discovery)
+ * -------------------------------------------
+ * This tool connects to Spoonacular's Menu Items API to find chain restaurant options.
+ *
+ * IMPORTANT LIMITATION:
+ * This tool ONLY searches major US chain restaurants (McDonald's, Chipotle, Olive Garden, etc.)
+ * It cannot find local/independent restaurants. The AI should frame results as INSPIRATION,
+ * not concrete "go here" suggestions. Users will need to search locally for actual locations.
+ *
+ * STRENGTH:
+ * Dietary filtering (keto, vegan, gluten-free, macros) - this is where Spoonacular shines.
  *
  * USAGE:
- * The AI should use this when the user's intent is "Dining Out," "Delivery,"
- * or "Takeout." It complements the Recipe tool (Cooking) to give Miso full coverage.
- *
- * PREREQUISITES:
- * - You need a Yelp Fusion API Key in your .env file (YELP_API_KEY).
- * - The AI *must* know the location (City/Neighborhood) before calling this.
+ * The AI should use this when users want dining-out options, especially with dietary constraints.
+ * Results should be framed as: "You might enjoy something like [dish] from [chain] -
+ * search for similar options near you."
  */
 export const findRestaurantsTool = tool({
-  // 1. Description
-  // Crucial: We explicitly tell the AI NOT to use this for recipes.
-  // We also force the AI to ask for 'location' if it's missing from the chat context.
   description: `
-    Call this tool ONLY when the user explicitly wants to 'eat out', 'order in', 'go to a restaurant', or 'find food near me'.
-    Do NOT use this for recipes or cooking instructions.
-    
-    CRITICAL: You MUST ask the user for their location (City, Neighborhood, or Zip) before calling this tool.
-    Returns a list of local restaurants with ratings, prices, and addresses.
+    Search for restaurant menu items from major US chain restaurants.
+
+    CRITICAL LIMITATIONS (tell the user):
+    - Only searches CHAIN restaurants (McDonald's, Chipotle, Applebee's, etc.)
+    - Cannot find local/independent restaurants
+    - Use results as INSPIRATION - suggest the TYPE of food, then encourage user to find nearby options
+
+    BEST FOR:
+    - Dietary needs: "keto options", "vegan meals", "gluten-free", "high protein"
+    - Calorie/macro targets: "under 500 calories", "low carb"
+    - Cuisine inspiration: "Mexican food", "healthy salads"
+
+    After returning results, suggest: "Search '[cuisine type] restaurants near me' to find local options"
+
+    You should still ask for the user's location for regional availability context.
   `,
 
-  // 2. Input Schema
   inputSchema: z.object({
+    query: z
+      .string()
+      .describe(
+        "The food type, cuisine, or dish to search for (e.g., 'keto burger', 'vegan bowl', 'grilled chicken salad')"
+      ),
+
     location: z
       .string()
-      .describe(
-        "The user's city, neighborhood, or address (e.g. 'Toronto', 'Downtown', '123 Main St')"
-      ),
-
-    term: z
-      .string()
       .optional()
       .describe(
-        "The type of food or venue name (e.g. 'Sushi', 'Pizza', 'McDonalds', 'Romantic Dinner')"
+        "User's city or region - used for context in AI response, not for filtering (chains are nationwide)"
       ),
 
-    price: z
-      .string()
+    // Dietary/macro filters - the tool's strength
+    maxCalories: z
+      .number()
+      .optional()
+      .describe("Maximum calories per serving (e.g., 500 for low-cal options)"),
+
+    maxCarbs: z
+      .number()
       .optional()
       .describe(
-        "Yelp Price filter: '1' ($), '2' ($$), '3' ($$$), '4' ($$$$). Use numbers as strings."
+        "Maximum carbohydrates in grams (e.g., 20 for keto/low-carb)"
       ),
 
-    open_now: z
-      .boolean()
+    minProtein: z
+      .number()
       .optional()
       .describe(
-        "If true, filters results to only show places open right now. Useful for late-night requests."
+        "Minimum protein in grams (e.g., 30 for high-protein meals)"
       ),
+
+    maxFat: z
+      .number()
+      .optional()
+      .describe("Maximum fat in grams"),
   }),
 
-  // 3. Execution Logic
-  execute: async ({ location, term, price, open_now }) => {
-    // -- Step A: Security Check --
-    const apiKey = process.env.YELP_API_KEY;
+  execute: async ({ query, location, maxCalories, maxCarbs, minProtein, maxFat }) => {
+    const apiKey = process.env.SPOONACULAR_API_KEY;
     if (!apiKey) {
-      throw new Error("Configuration Error: Missing Yelp API Key");
+      throw new Error("Configuration Error: Missing Spoonacular API Key");
     }
 
-    // -- Step B: Construct Query --
+    // Build query params
     const params = new URLSearchParams({
-      location: location,
-      term: term || "restaurants", // Default to general restaurants if no cuisine specified
-      sort_by: "best_match", // Yelp's default ranking algorithm
-      limit: "5", // LIMIT: Keep it tight (5 results) to save screen space
+      query: query,
+      number: "5", // Keep results tight
+      addMenuItemInformation: "true", // Get nutrition data
+      apiKey: apiKey,
     });
 
-    if (price) params.append("price", price);
-    if (open_now) params.append("open_now", "true");
+    if (maxCalories) params.append("maxCalories", maxCalories.toString());
+    if (maxCarbs) params.append("maxCarbs", maxCarbs.toString());
+    if (minProtein) params.append("minProtein", minProtein.toString());
+    if (maxFat) params.append("maxFat", maxFat.toString());
 
     try {
-      // -- Step C: API Call --
-      // NOTE: Yelp uses 'Authorization: Bearer <Key>', different from Spoonacular's query param.
-      const response = await fetch(
-        `https://api.yelp.com/v3/businesses/search?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            accept: "application/json",
-          },
-        }
-      );
+      const url = `https://api.spoonacular.com/food/menuItems/search?${params}`;
+      console.log("[findRestaurants] Fetching:", url.replace(apiKey, "***"));
+
+      const response = await fetch(url);
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[findRestaurants] API Error:", response.status, errorText);
         throw new Error(
-          `Yelp API Error: ${response.status} ${response.statusText}`
+          `Spoonacular API Error: ${response.status} ${response.statusText}`
         );
       }
 
       const data = await response.json();
+      console.log("[findRestaurants] Results count:", data.menuItems?.length || 0);
 
-      // -- Step D: Data Cleanup --
-      // Map the raw Yelp data to a clean, simple object for Miso.
-      const restaurants = data.businesses.map((b: any) => ({
-        name: b.name,
-        rating: b.rating, // e.g. 4.5
-        review_count: b.review_count,
-        price: b.price, // e.g. "$$"
-        address: b.location.address1,
-        city: b.location.city,
-        is_closed: b.is_closed, // Boolean: is it closed right now?
-        url: b.url, // Link to Yelp page (Vital for user trust)
-        image_url: b.image_url, // Thumbnail image
+      // Map to clean format with nutrition summary
+      const menuItems = (data.menuItems || []).map((item: any) => ({
+        name: item.title,
+        restaurant: item.restaurantChain,
+        image: item.image,
+        // Nutrition summary (if available via addMenuItemInformation)
+        nutrition: item.nutrition
+          ? {
+              calories: item.nutrition.calories,
+              protein: item.nutrition.protein,
+              carbs: item.nutrition.carbs,
+              fat: item.nutrition.fat,
+            }
+          : null,
       }));
 
-      // -- Step E: Empty State --
-      if (restaurants.length === 0) {
+      if (menuItems.length === 0) {
         return {
           success: false,
-          message: `No restaurants found in ${location} matching '${term}'. Ask the user to try a different location or cuisine.`,
+          message: `No chain restaurant menu items found for '${query}'.`,
+          searchTip: `Try searching "${query} restaurants near ${location || "me"}" on Google Maps to find local options.`,
+          limitation:
+            "Remember: This tool only searches major chain restaurants, not local spots.",
         };
       }
 
       return {
         success: true,
-        restaurants: restaurants,
+        menuItems: menuItems,
+        totalFound: data.totalMenuItems,
+        context: {
+          location: location || "not specified",
+          searchedFor: query,
+        },
+        // Remind AI how to frame these results
+        framingNote:
+          "Present these as INSPIRATION. Suggest the user search for similar options near them.",
+        searchTip: `Suggest user search: "${query} restaurants near ${location || "me"}" to find local options.`,
       };
     } catch (error) {
-      console.error("Yelp Error:", error);
+      console.error("Spoonacular Menu Items Error:", error);
       return {
         success: false,
-        message: "Failed to find restaurants due to an API error.",
+        message: "Failed to search menu items due to an API error.",
+        searchTip: `Try searching "${query} restaurants" on Google Maps or Yelp.`,
       };
     }
   },

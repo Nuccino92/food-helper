@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@ai-sdk/react";
-import { RecipeCarousel } from "./RecipeCarousel";
+import { RecipeCard } from "./RecipeCard";
 import { MessageImages } from "./MessageImage";
 
 interface ChatMessageProps {
@@ -131,10 +131,7 @@ const ChatMessage = memo(function ChatMessage({
           if (!data) return null;
 
           // 3. ERROR HANDLING: If the tool finished but found nothing
-          if (
-            data.success === false ||
-            (data.recipes && data.recipes.length === 0)
-          ) {
+          if (data.success === false || !data.recipe) {
             return (
               <div
                 key={index}
@@ -144,20 +141,18 @@ const ChatMessage = memo(function ChatMessage({
                 <div>
                   <p className="text-foreground font-semibold">Nothing found</p>
                   <p className="text-xs opacity-80">
-                    {/* Use the message from the tool, or a fallback */}
-                    {`Couldn't find any recipes for "${args?.query}". Try asking me to search for something else, like different ingredients or a simpler dish name!`}
+                    {`Couldn't find any recipes for "${args?.query}". Try asking me to search for something else!`}
                   </p>
                 </div>
               </div>
             );
           }
 
-          // 4. SUCCESS STATE: Render the Carousel
+          // 4. SUCCESS STATE: Render the single recipe card
           return (
-            <RecipeCarousel
+            <RecipeCard
               key={part.toolCallId || index}
-              recipes={data.recipes}
-              query={args?.query}
+              recipe={data.recipe}
             />
           );
         })}

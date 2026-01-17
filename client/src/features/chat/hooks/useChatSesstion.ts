@@ -16,10 +16,9 @@ function extractRecipeIdsFromMessage(message: any): number[] {
       part.toolInvocation?.toolName === "searchRecipes"
     ) {
       const data = part.output || part.result || part.toolInvocation?.result;
-      if (data?.success && data?.recipes) {
-        for (const recipe of data.recipes) {
-          if (recipe.id) ids.push(recipe.id);
-        }
+      if (data?.success && data?.recipe?.id) {
+        // Single recipe format
+        ids.push(data.recipe.id);
       }
     }
   }
