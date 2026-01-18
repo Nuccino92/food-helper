@@ -5,6 +5,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useRateLimit, type RateLimitError } from "./useRateLimit";
 
 // Extract recipe IDs from a message's tool invocations
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractRecipeIdsFromMessage(message: any): number[] {
   if (!message.parts) return [];
 

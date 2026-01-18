@@ -1,21 +1,3 @@
-1. Look into data retrieval
-
-- spoonacular
-- edamam
-
-2. ensure it works properly ^
-3. ADJUST AI, ITS TRASH
-
-4. look into features
-
-- scan my fridge
-- ordering/resturant recommendations
-- calorie/macro goals
-
-4. handle nice scroll UX
-
-5. ui imnprovements
-
 - placeholder text changes based on assistant, also how may i help you text
 
 // have claude opus tune up all personas
@@ -40,3 +22,8 @@ it's complete, then write the spec to the file
 1. move recipes to top?
 2. smooth scrolling
 3. rate limiting (redis?)
+
+//
+
+1. test the rate limiting
+2. dont publish without go over terms, policy, etc

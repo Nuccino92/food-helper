@@ -294,9 +294,10 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
     outline: none;
   }
 
-  /* Smooth scrolling */
+  /* Smooth scrolling and prevent CLS from scrollbar */
   html {
     scroll-behavior: smooth;
+    overflow-y: scroll;
   }
 
   button:not(:disabled),
@@ -318,45 +319,50 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
   }
 }
 
-/* 1. Set the basic dimensions */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+/* Custom Scrollbar - Always visible */
+*::-webkit-scrollbar {
+  width: 12px;
 }
 
-/* 2. Track is always transparent */
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+*::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
 }
 
-/* 3. Thumb is TRANSPARENT by default (invisible) */
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 10px;
-  border: 2px solid transparent;
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 3px solid transparent;
   background-clip: content-box;
-  transition: background-color 0.3s; /* Note: Transitions on scrollbars work in some browsers, but not all */
 }
 
-/* 4. Thumb becomes visible when HOVERING the container */
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: #555; /* The visible color */
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
 }
 
-/* 5. Optional: Darker on direct hover of the scrollbar itself */
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #777;
+/* Dark mode scrollbar */
+.dark *::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Firefox Support */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent; /* thumb track */
-  transition: scrollbar-color 0.3s;
+* {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
 
-/* Firefox: Show on hover */
-.custom-scrollbar:hover {
-  scrollbar-color: #555 transparent;
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
 }
 
 .typing-indicator span {
@@ -424,4 +430,51 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
     rgba(128, 128, 0, 0.35) 0%,
     transparent 80%
   );
+}
+
+/* Chat Input Glow Effects - T3 Style */
+.chat-input-glow {
+  position: relative;
+}
+
+.chat-input-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1rem;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--glow-color-1) 0%,
+    var(--glow-color-2) 50%,
+    var(--glow-color-1) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Miso glow - teal/turquoise */
+.chat-input-glow-miso {
+  --glow-color-1: rgba(64, 224, 208, 0.5);
+  --glow-color-2: rgba(32, 178, 170, 0.7);
+}
+
+/* Gordon glow - crimson/rose */
+.chat-input-glow-gordon {
+  --glow-color-1: rgba(220, 20, 60, 0.5);
+  --glow-color-2: rgba(255, 99, 71, 0.7);
+}
+
+/* Sancho glow - olive/yellow */
+.chat-input-glow-sancho {
+  --glow-color-1: rgba(184, 134, 11, 0.5);
+  --glow-color-2: rgba(218, 165, 32, 0.7);
 }

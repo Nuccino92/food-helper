@@ -1,4 +1,4 @@
-import { Gift, Zap, Leaf, ChefHat, type LucideIcon } from "lucide-react";
+import { HelpCircle, Users, Zap, ChefHat, type LucideIcon } from "lucide-react";
 
 // Update the type to include the icon
 export type QuickSelectPrompt = {
@@ -12,19 +12,19 @@ export type QuickSelectPrompt = {
 // Export the array of prompts as a constant
 export const QUICK_SELECT_PROMPTS: QuickSelectPrompt[] = [
   {
-    title: "Surprise Me!",
-    prompt: "Surprise me with something.",
-    icon: Gift,
+    title: "I Can't Decide",
+    prompt: "I have no idea what I want to eat.",
+    icon: HelpCircle,
+  },
+  {
+    title: "Family Can't Agree",
+    prompt: "We're a group and no one can agree on food.",
+    icon: Users,
   },
   {
     title: "Something Quick",
     prompt: "I need something quick to eat.",
     icon: Zap,
-  },
-  {
-    title: "Healthy Choice",
-    prompt: "I'm looking for a healthy option.",
-    icon: Leaf,
   },
   {
     title: "Use My Ingredients",

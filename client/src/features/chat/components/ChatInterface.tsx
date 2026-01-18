@@ -202,9 +202,10 @@ function EmptyChat({ isLoading, sendMessage }: EmptyChatProps) {
   const { persona } = usePersona();
 
   const welcomeMessage = {
-    "assistant-miso": "How may I help you?",
-    "assistant-gordon": "Shall we find something edible?",
-    "assistant-sancho": "Can we make this quick?",
+    "assistant-miso": "Stuck on what to eat? Let's figure it out!",
+    "assistant-gordon": "Can't decide? Let me elevate your choice.",
+    "assistant-sancho":
+      "Another one who can't pick... Let's get this over with.",
   };
 
   return (

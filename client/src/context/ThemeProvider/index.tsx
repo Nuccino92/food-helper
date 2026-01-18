@@ -4,7 +4,7 @@ import { ThemeProviderContext } from "./hooks";
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
+  defaultTheme = "light",
   storageKey = "vite-ui-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(

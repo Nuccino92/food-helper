@@ -116,8 +116,15 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
   const canSubmit =
     (inputValue.trim() || (hasImages && allReady)) && !isLoading;
 
+  // Glow class based on persona
+  const glowClass = {
+    "assistant-miso": "chat-input-glow chat-input-glow-miso",
+    "assistant-gordon": "chat-input-glow chat-input-glow-gordon",
+    "assistant-sancho": "chat-input-glow chat-input-glow-sancho",
+  };
+
   return (
-    <div className="rounded-2xl border-t bg-white p-4 shadow-md">
+    <div className={cn("rounded-2xl bg-white p-4 shadow-md", glowClass[persona])}>
       {/* Staged images preview */}
       <StagedImages images={stagedImages} onRemove={removeImage} />
 
