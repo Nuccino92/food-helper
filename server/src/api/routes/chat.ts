@@ -4,6 +4,13 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { buildSystemPrompt } from "../../personas";
 import { findRestaurantsTool } from "../../tools/findRestaurants";
+import {
+  checkBurstLimit,
+  checkTokenBudget,
+  deductTokens,
+  estimateTokens,
+  generateIdentifier,
+} from "../../services/rateLimit";
 
 const router = Router();
 
@@ -13,6 +20,48 @@ export default (app: Router) => {
   router.post("/stream", async (req: Request, res: Response) => {
     try {
       const { messages, userLocalTime, personaId, seenRecipeIds = [] } = req.body;
+
+      // --- Rate Limiting ---
+      const ip = req.ip || req.socket.remoteAddress || "unknown";
+      const fingerprint = req.headers["x-fingerprint"] as string | undefined;
+      const identifier = generateIdentifier(ip, fingerprint);
+
+      // 1. Burst protection (20 req/min)
+      const burstCheck = await checkBurstLimit(identifier);
+      if (!burstCheck.success) {
+        res.status(429).json({
+          error: "rate_limit",
+          type: "burst",
+          message: "Too many requests. Please slow down.",
+          reset: burstCheck.reset,
+        });
+        return;
+      }
+
+      // 2. Estimate input tokens from the latest user message
+      const latestMessage = messages[messages.length - 1];
+      const inputText =
+        typeof latestMessage?.content === "string"
+          ? latestMessage.content
+          : JSON.stringify(latestMessage?.content || "");
+      const estimatedInputTokens = estimateTokens(inputText);
+
+      // Add buffer for system prompt and expected response (~2000 tokens typical)
+      const estimatedTotalTokens = estimatedInputTokens + 2000;
+
+      // 3. Pre-check token budget
+      const tokenCheck = await checkTokenBudget(identifier, estimatedTotalTokens);
+      if (!tokenCheck.allowed) {
+        res.status(429).json({
+          error: "rate_limit",
+          type: "tokens",
+          message: "You've used your token budget for this hour.",
+          remaining: tokenCheck.remaining,
+          limit: tokenCheck.limit,
+          reset: tokenCheck.reset,
+        });
+        return;
+      }
 
       const systemPrompt = buildSystemPrompt(
         personaId || "assistant-miso",
@@ -166,16 +215,28 @@ export default (app: Router) => {
         res.setHeader(key, value);
       });
 
+      // Track streamed content size for token deduction
+      let streamedBytes = 0;
+
       if (response.body) {
         const reader = response.body.getReader();
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          streamedBytes += value?.length || 0;
           res.write(value);
         }
       }
 
       res.end();
+
+      // Deduct tokens after streaming completes (non-blocking)
+      // Estimate: input tokens + output tokens (streamed bytes / 4)
+      const outputTokens = Math.ceil(streamedBytes / 4);
+      const totalTokens = estimatedInputTokens + outputTokens;
+      deductTokens(identifier, totalTokens).catch((err) => {
+        console.error("Failed to deduct tokens:", err);
+      });
     } catch (error) {
       console.error("Error:", error);
       if (!res.headersSent) res.status(500).end();

@@ -2,6 +2,7 @@ import { usePersona } from "@/context/PersonaProvider/hooks";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState, useCallback, useMemo } from "react";
+import { useRateLimit, type RateLimitError } from "./useRateLimit";
 
 // Extract recipe IDs from a message's tool invocations
 function extractRecipeIdsFromMessage(message: any): number[] {
@@ -29,18 +30,22 @@ export function useChatSession() {
   const { persona } = usePersona();
   const [seenRecipeIds, setSeenRecipeIds] = useState<number[]>([]);
 
+  // Rate limiting
+  const rateLimit = useRateLimit();
+
   // Create transport with dynamic body that includes seenRecipeIds
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: `${import.meta.env.VITE_API_URL}/chat/stream`,
+        headers: rateLimit.getHeaders(),
         body: {
           userLocalTime: new Date().toLocaleString(),
           personaId: persona ?? null,
           seenRecipeIds,
         },
       }),
-    [persona, seenRecipeIds]
+    [persona, seenRecipeIds, rateLimit],
   );
 
   const chat = useChat({
@@ -49,10 +54,29 @@ export function useChatSession() {
 
     onError: (error) => {
       console.error("Chat Error:", error);
+
+      // Check if this is a rate limit error
+      // The error might be a Response object or contain the response
+      if (error && typeof error === "object") {
+        const errorObj = error as { message?: string };
+        try {
+          // Try to parse rate limit error from message
+          if (errorObj.message?.includes("rate_limit")) {
+            const parsed = JSON.parse(errorObj.message) as RateLimitError;
+            rateLimit.handleRateLimitError(parsed);
+            return;
+          }
+        } catch {
+          // Not a JSON error, continue with normal error handling
+        }
+      }
     },
 
     onFinish: (message) => {
       console.log("✅ Stream finished:", message);
+
+      // Refresh rate limit status after successful message
+      rateLimit.fetchStatus();
 
       // Extract recipe IDs from the finished message and add to seen list
       const newIds = extractRecipeIdsFromMessage(message);
@@ -75,5 +99,6 @@ export function useChatSession() {
     ...chat,
     seenRecipeIds,
     resetSeenRecipes,
+    rateLimit,
   };
 }

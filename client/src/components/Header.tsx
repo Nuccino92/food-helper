@@ -5,8 +5,13 @@ import { useTheme } from "@/context/ThemeProvider/hooks";
 import { PERSONAS, PersonaSelector } from "./PersonaSelector";
 import { usePersona } from "@/context/PersonaProvider/hooks";
 import type { Persona } from "@/context/PersonaProvider/types";
+import { cn } from "@/lib/utils";
 
-export default function Header() {
+interface HeaderProps {
+  className?: string;
+}
+
+export default function Header({ className }: HeaderProps) {
   const { theme, setTheme } = useTheme();
   const { persona, setPersona } = usePersona();
 
@@ -20,7 +25,7 @@ export default function Header() {
   }
 
   return (
-    <header className="dark:bg-muted flex h-(--header-height) w-screen items-center justify-between border-b bg-white p-4">
+    <header className={cn("dark:bg-muted flex h-(--header-height) w-full items-center justify-between border-b bg-white p-4", className)}>
       {/* Left side header */}
       <Button
         variant="ghost"
