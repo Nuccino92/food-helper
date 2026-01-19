@@ -294,10 +294,16 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
     outline: none;
   }
 
-  /* Smooth scrolling and prevent CLS from scrollbar */
-  html {
-    scroll-behavior: smooth;
-    overflow-y: scroll;
+  /* Prevent Radix from adding padding to body when dropdowns open */
+  body {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* When chat page is present, prevent html/body scroll to avoid double scrollbar */
+  body:has(.chat-page) {
+    overflow: hidden;
+    height: 100vh;
   }
 
   button:not(:disabled),
@@ -319,50 +325,70 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
   }
 }
 
-/* Custom Scrollbar - Always visible */
-*::-webkit-scrollbar {
+/* Custom Scrollbar - for chat page scroll container */
+.chat-page::-webkit-scrollbar {
   width: 12px;
 }
 
-*::-webkit-scrollbar-track {
+.chat-page::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.05);
   border-radius: 6px;
 }
 
-*::-webkit-scrollbar-thumb {
+.chat-page::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
-*::-webkit-scrollbar-thumb:hover {
+.chat-page::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.35);
 }
 
 /* Dark mode scrollbar */
-.dark *::-webkit-scrollbar-track {
+.dark .chat-page::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.dark *::-webkit-scrollbar-thumb {
+.dark .chat-page::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
-.dark *::-webkit-scrollbar-thumb:hover {
+.dark .chat-page::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Firefox Support */
-* {
+.chat-page {
   scrollbar-width: auto;
   scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
 
-.dark * {
+.dark .chat-page {
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+}
+
+/* Hide scrollbars on dropdowns and other overflow elements by default */
+[data-radix-popper-content-wrapper] *::-webkit-scrollbar,
+[data-slot="dropdown-menu-content"]::-webkit-scrollbar {
+  display: none;
+}
+
+[data-radix-popper-content-wrapper] *,
+[data-slot="dropdown-menu-content"] {
+  scrollbar-width: none;
+}
+
+/* Custom scrollbar for chat input textarea - hide scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: none;
 }
 
 .typing-indicator span {

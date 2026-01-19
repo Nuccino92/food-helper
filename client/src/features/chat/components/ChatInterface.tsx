@@ -31,6 +31,10 @@ export default function ChatInterface() {
     .reverse()
     .find((m) => m.role === "assistant");
 
+  // Helper to get scroll container (the chat-page div)
+  const getScrollContainer = () =>
+    document.querySelector('.chat-page') as HTMLElement | null;
+
   // Scroll to user message when a new one is added
   useEffect(() => {
     if (!lastUserMessage) return;
@@ -61,10 +65,13 @@ export default function ChatInterface() {
     if (lastAssistantMessageIdRef.current === lastAssistantMessage.id) return;
     lastAssistantMessageIdRef.current = lastAssistantMessage.id;
 
+    const container = getScrollContainer();
+    if (!container) return;
+
     // Use multiple frames to ensure content is fully rendered
     const scrollToBottom = () => {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
+      container.scrollTo({
+        top: container.scrollHeight,
         behavior: "instant",
       });
     };
@@ -73,7 +80,7 @@ export default function ChatInterface() {
     let lastHeight = 0;
     let stableCount = 0;
     const checkAndScroll = () => {
-      const currentHeight = document.documentElement.scrollHeight;
+      const currentHeight = container.scrollHeight;
       if (currentHeight !== lastHeight) {
         lastHeight = currentHeight;
         stableCount = 0;

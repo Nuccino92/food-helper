@@ -1,4 +1,4 @@
-import { Settings, Sun, Moon, FileText, Shield, Info } from "lucide-react";
+import { Menu, Sun, Moon, FileText, Shield, Info } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -26,14 +26,17 @@ export default function Header({ className }: HeaderProps) {
   const selectedPersona =
     PERSONAS.find((p) => p.value === persona) ?? PERSONAS[0];
 
-  const isDark = theme === "dark";
-
   function handlePersonaChange(selectedPersona: Persona) {
     setPersona(selectedPersona);
   }
 
   return (
-    <header className={cn("dark:bg-muted flex h-(--header-height) w-full items-center justify-between border-b bg-white p-4", className)}>
+    <header
+      className={cn(
+        "dark:bg-muted flex h-(--header-height) w-full items-center justify-between border-b bg-white p-4",
+        className,
+      )}
+    >
       {/* Left side header */}
       <Button
         variant="ghost"
@@ -42,8 +45,10 @@ export default function Header({ className }: HeaderProps) {
         aria-label="Reload application"
       >
         <div className="text-left">
-          <h1 className="text-xl font-bold leading-tight">Miso</h1>
-          <p className="text-muted-foreground text-xs font-normal">Can't decide what to eat?</p>
+          <h1 className="text-xl leading-tight font-bold">Miso</h1>
+          <p className="text-muted-foreground text-xs font-normal">
+            Can't decide what to eat?
+          </p>
         </div>
       </Button>
 
@@ -58,21 +63,21 @@ export default function Header({ className }: HeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="icon" variant="secondary">
-              <Settings className="h-5 w-5" />
+              <Menu className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-52 overflow-hidden">
             {/* Theme selector row */}
             <div className="flex items-center justify-between px-2 py-1.5">
               <span className="text-sm">Theme</span>
-              <div className="flex items-center rounded-lg bg-muted p-1">
+              <div className="bg-muted flex items-center rounded-lg p-1">
                 <button
                   onClick={() => setTheme("light")}
                   className={cn(
                     "rounded-md p-1.5 transition-colors",
                     theme === "light"
                       ? "bg-background shadow-sm"
-                      : "hover:bg-background/50"
+                      : "hover:bg-background/50",
                   )}
                   aria-label="Light mode"
                 >
@@ -84,7 +89,7 @@ export default function Header({ className }: HeaderProps) {
                     "rounded-md p-1.5 transition-colors",
                     theme === "dark"
                       ? "bg-background shadow-sm"
-                      : "hover:bg-background/50"
+                      : "hover:bg-background/50",
                   )}
                   aria-label="Dark mode"
                 >
