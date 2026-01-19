@@ -18,7 +18,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       href={recipe.sourceUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group bg-card text-card-foreground dark:hover:border-primary/50 mt-3 block max-w-sm overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
+      className="group bg-card text-card-foreground dark:hover:border-primary/50 mb-3 block max-w-sm overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
     >
       {/* Image */}
       <div className="relative aspect-video w-full overflow-hidden">
