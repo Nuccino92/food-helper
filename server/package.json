@@ -9,7 +9,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "flush": "ts-node-dev --transpile-only src/flush-redis.ts"
   },
   "keywords": [],
   "author": "",

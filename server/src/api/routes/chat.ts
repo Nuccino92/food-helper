@@ -4,7 +4,9 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { buildSystemPrompt } from "../../personas";
 import { findRestaurantsTool } from "../../tools/findRestaurants";
+import { createFlagAbuseTool } from "../../tools/flagAbuse";
 import {
+  checkAbuseLock,
   checkBurstLimit,
   checkTokenBudget,
   deductTokens,
@@ -25,6 +27,20 @@ export default (app: Router) => {
       const ip = req.ip || req.socket.remoteAddress || "unknown";
       const fingerprint = req.headers["x-fingerprint"] as string | undefined;
       const identifier = generateIdentifier(ip, fingerprint);
+
+      // 0. Abuse lock check (AI-triggered lockout)
+      const abuseLock = await checkAbuseLock(identifier);
+      if (abuseLock.locked) {
+        res.status(429).json({
+          error: "rate_limit",
+          type: "tokens",
+          message: "You've been temporarily locked out.",
+          remaining: 0,
+          limit: 10000,
+          reset: abuseLock.reset,
+        });
+        return;
+      }
 
       // 1. Burst protection (20 req/min)
       const burstCheck = await checkBurstLimit(identifier);
@@ -205,6 +221,7 @@ export default (app: Router) => {
         tools: {
           searchRecipes: searchRecipesWithContext,
           findRestaurant: findRestaurantsTool,
+          flagAbuse: createFlagAbuseTool(identifier),
         },
         stopWhen: stepCountIs(3), // Allow tool call + response in one turn
       });

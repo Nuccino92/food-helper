@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import {
+  checkAbuseLock,
   getRateLimitStatus,
   grantFeedbackBonus,
   storeFeedback,
@@ -18,14 +19,19 @@ export default (app: Router) => {
       const fingerprint = req.headers["x-fingerprint"] as string | undefined;
       const identifier = generateIdentifier(ip, fingerprint);
 
-      const status = await getRateLimitStatus(identifier);
+      const [status, abuseLock] = await Promise.all([
+        getRateLimitStatus(identifier),
+        checkAbuseLock(identifier),
+      ]);
 
       res.json({
-        remaining: status.remaining,
+        remaining: abuseLock.locked ? 0 : status.remaining,
         limit: status.limit,
-        reset: status.reset,
-        resetIn: Math.max(0, Math.ceil((status.reset - Date.now()) / 1000)),
-        canProvideFeedback: status.canProvideFeedback,
+        reset: abuseLock.locked ? abuseLock.reset : status.reset,
+        resetIn: abuseLock.locked
+          ? Math.max(0, Math.ceil((abuseLock.reset - Date.now()) / 1000))
+          : Math.max(0, Math.ceil((status.reset - Date.now()) / 1000)),
+        canProvideFeedback: abuseLock.locked ? false : status.canProvideFeedback,
       });
     } catch (error) {
       console.error("Rate limit status error:", error);
@@ -39,6 +45,16 @@ export default (app: Router) => {
       const ip = req.ip || req.socket.remoteAddress || "unknown";
       const fingerprint = req.headers["x-fingerprint"] as string | undefined;
       const identifier = generateIdentifier(ip, fingerprint);
+
+      // Block feedback if user is abuse-locked
+      const abuseLock = await checkAbuseLock(identifier);
+      if (abuseLock.locked) {
+        res.status(403).json({
+          success: false,
+          message: "Feedback is unavailable during a lockout.",
+        });
+        return;
+      }
 
       const { score, sessionContext } = req.body;
 

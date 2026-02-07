@@ -5,6 +5,8 @@ import { Ratelimit } from "@upstash/ratelimit";
 const TOKEN_BUDGET = 10000; // tokens per hour
 const FEEDBACK_BONUS = 5000; // tokens granted for feedback
 const FEEDBACK_COOLDOWN_KEY_PREFIX = "feedback:granted:";
+const ABUSE_LOCK_PREFIX = "abuse:lock:";
+const ABUSE_LOCK_TTL = 3600; // 1 hour in seconds
 
 // Check if rate limiting is enabled
 // Set RATE_LIMIT_ENABLED=false to disable in development
@@ -226,6 +228,43 @@ export async function grantFeedbackBonus(identifier: string): Promise<{
     success: true,
     newRemaining,
     message: `You've been granted ${FEEDBACK_BONUS.toLocaleString()} bonus tokens!`,
+  };
+}
+
+// Lock a user out for abuse (simple Redis key with TTL)
+export async function lockUser(
+  identifier: string,
+): Promise<{ success: boolean; reset: number }> {
+  if (!isRateLimitEnabled || !redis) {
+    return { success: false, reset: Date.now() + ABUSE_LOCK_TTL * 1000 };
+  }
+
+  const key = `${ABUSE_LOCK_PREFIX}${identifier}`;
+  await redis.set(key, true, { ex: ABUSE_LOCK_TTL });
+
+  return {
+    success: true,
+    reset: Date.now() + ABUSE_LOCK_TTL * 1000,
+  };
+}
+
+// Check if a user is locked out for abuse
+export async function checkAbuseLock(
+  identifier: string,
+): Promise<{ locked: boolean; reset: number }> {
+  if (!isRateLimitEnabled || !redis) {
+    return { locked: false, reset: 0 };
+  }
+
+  const key = `${ABUSE_LOCK_PREFIX}${identifier}`;
+  const [isLocked, ttl] = await Promise.all([
+    redis.get<boolean>(key),
+    redis.ttl(key),
+  ]);
+
+  return {
+    locked: !!isLocked,
+    reset: ttl > 0 ? Date.now() + ttl * 1000 : 0,
   };
 }
 
