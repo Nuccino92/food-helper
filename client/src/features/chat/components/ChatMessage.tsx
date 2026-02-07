@@ -11,13 +11,11 @@ import { MessageImages } from "./MessageImage";
 interface ChatMessageProps {
   message: UIMessage;
   isFirstMessage: boolean;
-  setRef?: (el: HTMLElement | null) => void;
 }
 
 const ChatMessage = memo(function ChatMessage({
   message,
   isFirstMessage,
-  setRef,
 }: ChatMessageProps) {
   const isUser = message.role === "user";
 
@@ -71,9 +69,8 @@ const ChatMessage = memo(function ChatMessage({
 
   return (
     <article
-      ref={setRef}
       className={cn(
-        "flex scroll-mt-16 flex-col gap-2 transition-all",
+        "flex flex-col gap-2 transition-all",
         isUser ? "ml-auto max-w-[85%] items-end" : "w-full items-start",
         !isFirstMessage && isUser && "mt-12",
       )}

@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
-import { useRef, useEffect } from "react";
 
 import { ChatInputForm, type ImageData } from "./ChatInputForm";
 import Messages from "./Messages";
@@ -16,92 +15,6 @@ export default function ChatInterface() {
   const isChatEmpty = messages.length === 0;
   const isLoading = status === "submitted" || status === "streaming";
   const isWaitingForResponse = status === "submitted";
-
-  // Refs for scroll behavior
-  const messageRefs = useRef<Map<string, HTMLElement>>(new Map());
-  const lastUserMessageIdRef = useRef<string | null>(null);
-  const lastAssistantMessageIdRef = useRef<string | null>(null);
-
-  // Find the last user message ID
-  const lastUserMessage = [...messages]
-    .reverse()
-    .find((m) => m.role === "user");
-  // Find the last assistant message
-  const lastAssistantMessage = [...messages]
-    .reverse()
-    .find((m) => m.role === "assistant");
-
-  // Helper to get scroll container (the chat-page div)
-  const getScrollContainer = () =>
-    document.querySelector('.chat-page') as HTMLElement | null;
-
-  // Scroll to user message when a new one is added
-  useEffect(() => {
-    if (!lastUserMessage) return;
-
-    // Only scroll if this is a new user message
-    if (lastUserMessageIdRef.current === lastUserMessage.id) return;
-    lastUserMessageIdRef.current = lastUserMessage.id;
-
-    // Use setTimeout to ensure DOM has fully updated
-    const timeoutId = setTimeout(() => {
-      const messageEl = messageRefs.current.get(lastUserMessage.id);
-
-      if (messageEl) {
-        // Scroll the page so user message is at the top
-        // The scroll-mt-16 on the message element handles the offset from header
-        messageEl.scrollIntoView({ behavior: "instant", block: "start" });
-      }
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [lastUserMessage, lastUserMessage?.id]);
-
-  // Scroll to bottom when a new assistant message appears
-  useEffect(() => {
-    if (!lastAssistantMessage) return;
-
-    // Only scroll if this is a new assistant message
-    if (lastAssistantMessageIdRef.current === lastAssistantMessage.id) return;
-    lastAssistantMessageIdRef.current = lastAssistantMessage.id;
-
-    const container = getScrollContainer();
-    if (!container) return;
-
-    // Use multiple frames to ensure content is fully rendered
-    const scrollToBottom = () => {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "instant",
-      });
-    };
-
-    // Keep scrolling until content stabilizes
-    let lastHeight = 0;
-    let stableCount = 0;
-    const checkAndScroll = () => {
-      const currentHeight = container.scrollHeight;
-      if (currentHeight !== lastHeight) {
-        lastHeight = currentHeight;
-        stableCount = 0;
-        scrollToBottom();
-      } else {
-        stableCount++;
-      }
-      // Keep checking until height is stable for 3 frames
-      if (stableCount < 3) {
-        requestAnimationFrame(checkAndScroll);
-      }
-    };
-
-    // Initial scroll after short delay to let typing indicator transition
-    const timeoutId = setTimeout(() => {
-      scrollToBottom();
-      requestAnimationFrame(checkAndScroll);
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
-  }, [lastAssistantMessage, lastAssistantMessage?.id]);
 
   const handleSendMessage = (content: string, images?: ImageData[]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,7 +62,6 @@ export default function ChatInterface() {
             isLoading={isLoading}
             isWaitingForResponse={isWaitingForResponse}
             sendMessage={handleSendMessage}
-            messageRefs={messageRefs}
           />
         )}
       </div>
@@ -172,7 +84,6 @@ type ChildProps = {
   isLoading: boolean;
   isWaitingForResponse: boolean;
   sendMessage: (message: string, images?: ImageData[]) => void;
-  messageRefs: React.MutableRefObject<Map<string, HTMLElement>>;
 };
 
 function WithMessage({
@@ -180,7 +91,6 @@ function WithMessage({
   isLoading,
   isWaitingForResponse,
   sendMessage,
-  messageRefs,
 }: ChildProps) {
   return (
     <>
@@ -188,7 +98,6 @@ function WithMessage({
         <Messages
           messages={messages}
           isWaitingForResponse={isWaitingForResponse}
-          messageRefs={messageRefs}
         />
       </div>
 
