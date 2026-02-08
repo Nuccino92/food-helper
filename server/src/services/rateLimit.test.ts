@@ -13,7 +13,7 @@ describe("Rate Limit Service", () => {
   describe("estimateTokens (pure function)", () => {
     it("should estimate tokens based on character count", async () => {
       process.env.RATE_LIMIT_ENABLED = "false"; // Disable to avoid Redis init
-      const { estimateTokens } = await import("./rateLimit");
+      const { estimateTokens } = await import("./rateLimit.js");
 
       // ~4 characters per token
       expect(estimateTokens("hello")).toBe(2); // 5 chars = ceil(5/4) = 2
@@ -25,7 +25,7 @@ describe("Rate Limit Service", () => {
 
     it("should handle long text", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { estimateTokens } = await import("./rateLimit");
+      const { estimateTokens } = await import("./rateLimit.js");
 
       const longText = "a".repeat(1000);
       expect(estimateTokens(longText)).toBe(250); // 1000/4 = 250
@@ -33,7 +33,7 @@ describe("Rate Limit Service", () => {
 
     it("should handle unicode text", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { estimateTokens } = await import("./rateLimit");
+      const { estimateTokens } = await import("./rateLimit.js");
 
       // Unicode characters are still counted by length
       const emoji = "Hello 🍕"; // 8 chars (emoji is 2 chars in JS)
@@ -44,7 +44,7 @@ describe("Rate Limit Service", () => {
   describe("generateIdentifier (pure function)", () => {
     it("should combine IP and fingerprint when both provided", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { generateIdentifier } = await import("./rateLimit");
+      const { generateIdentifier } = await import("./rateLimit.js");
 
       expect(generateIdentifier("192.168.1.1", "abc123")).toBe(
         "192.168.1.1:abc123"
@@ -53,7 +53,7 @@ describe("Rate Limit Service", () => {
 
     it("should return IP only when fingerprint not provided", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { generateIdentifier } = await import("./rateLimit");
+      const { generateIdentifier } = await import("./rateLimit.js");
 
       expect(generateIdentifier("192.168.1.1")).toBe("192.168.1.1");
       expect(generateIdentifier("192.168.1.1", undefined)).toBe("192.168.1.1");
@@ -61,14 +61,14 @@ describe("Rate Limit Service", () => {
 
     it("should handle IPv6 addresses", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { generateIdentifier } = await import("./rateLimit");
+      const { generateIdentifier } = await import("./rateLimit.js");
 
       expect(generateIdentifier("::1", "fingerprint")).toBe("::1:fingerprint");
     });
 
     it("should handle empty fingerprint string", async () => {
       process.env.RATE_LIMIT_ENABLED = "false";
-      const { generateIdentifier } = await import("./rateLimit");
+      const { generateIdentifier } = await import("./rateLimit.js");
 
       // Empty string is falsy, so should return IP only
       expect(generateIdentifier("192.168.1.1", "")).toBe("192.168.1.1");
@@ -83,7 +83,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("checkBurstLimit should always return success", async () => {
-      const { checkBurstLimit } = await import("./rateLimit");
+      const { checkBurstLimit } = await import("./rateLimit.js");
 
       const result = await checkBurstLimit("test-user");
 
@@ -92,7 +92,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("checkTokenBudget should always allow even for huge token requests", async () => {
-      const { checkTokenBudget } = await import("./rateLimit");
+      const { checkTokenBudget } = await import("./rateLimit.js");
 
       const result = await checkTokenBudget("test-user", 999999);
 
@@ -102,7 +102,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("deductTokens should return full budget without deducting", async () => {
-      const { deductTokens } = await import("./rateLimit");
+      const { deductTokens } = await import("./rateLimit.js");
 
       const result = await deductTokens("test-user", 5000);
 
@@ -111,7 +111,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("getRateLimitStatus should return unlimited status with no feedback option", async () => {
-      const { getRateLimitStatus } = await import("./rateLimit");
+      const { getRateLimitStatus } = await import("./rateLimit.js");
 
       const result = await getRateLimitStatus("test-user");
 
@@ -122,7 +122,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("grantFeedbackBonus should return disabled message", async () => {
-      const { grantFeedbackBonus } = await import("./rateLimit");
+      const { grantFeedbackBonus } = await import("./rateLimit.js");
 
       const result = await grantFeedbackBonus("test-user");
 
@@ -132,7 +132,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("storeFeedback should silently return without throwing", async () => {
-      const { storeFeedback } = await import("./rateLimit");
+      const { storeFeedback } = await import("./rateLimit.js");
 
       await expect(
         storeFeedback("test-user", 8, "test context")
@@ -149,7 +149,7 @@ describe("Rate Limit Service", () => {
 
     it("should behave as if rate limiting is disabled", async () => {
       const { checkBurstLimit, checkTokenBudget, getRateLimitStatus } =
-        await import("./rateLimit");
+        await import("./rateLimit.js");
 
       const burstResult = await checkBurstLimit("test-user");
       expect(burstResult.success).toBe(true);
@@ -162,7 +162,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("grantFeedbackBonus should return disabled message", async () => {
-      const { grantFeedbackBonus } = await import("./rateLimit");
+      const { grantFeedbackBonus } = await import("./rateLimit.js");
 
       const result = await grantFeedbackBonus("test-user");
 
@@ -179,7 +179,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("should behave as if rate limiting is disabled", async () => {
-      const { checkBurstLimit } = await import("./rateLimit");
+      const { checkBurstLimit } = await import("./rateLimit.js");
 
       const result = await checkBurstLimit("test-user");
       expect(result.success).toBe(true);
@@ -192,7 +192,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("checkBurstLimit reset should be ~1 minute in the future", async () => {
-      const { checkBurstLimit } = await import("./rateLimit");
+      const { checkBurstLimit } = await import("./rateLimit.js");
 
       const before = Date.now();
       const result = await checkBurstLimit("test-user");
@@ -207,7 +207,7 @@ describe("Rate Limit Service", () => {
     });
 
     it("checkTokenBudget reset should be ~1 hour in the future", async () => {
-      const { checkTokenBudget } = await import("./rateLimit");
+      const { checkTokenBudget } = await import("./rateLimit.js");
 
       const before = Date.now();
       const result = await checkTokenBudget("test-user", 100);
