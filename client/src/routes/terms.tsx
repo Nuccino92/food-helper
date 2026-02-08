@@ -92,7 +92,7 @@ function TermsPage() {
           <h2 className="mb-4 text-xl font-semibold">7. Contact</h2>
           <p className="text-muted-foreground leading-relaxed">
             Questions about these terms? Contact us at{" "}
-            <span className="text-primary">[your-email@example.com]</span>
+            <span className="text-primary">hello.miso.app@gmail.com</span>
           </p>
         </section>
       </div>
