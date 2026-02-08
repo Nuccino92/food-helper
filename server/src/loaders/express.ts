@@ -6,7 +6,11 @@ export default ({ app }: { app: express.Application }) => {
   // --- Middleware Setup ---
 
   // Enable Cross-Origin Resource Sharing (CORS) to allow your React app to communicate
-  app.use(cors());
+  app.use(
+    cors({
+      origin: process.env.ALLOWED_ORIGIN || "http://localhost:5173",
+    })
+  );
 
   // Middleware that transforms the raw request body into a JSON object
   // Increased limit to handle base64 encoded images (up to ~30MB to accommodate multiple compressed images)
