@@ -131,6 +131,7 @@ export function ImageModal({ src, alt, open, onOpenChange }: ImageModalProps) {
           <button
             onClick={() => onOpenChange(false)}
             className="absolute top-4 right-4 z-50 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+            aria-label="Close image"
           >
             <X className="h-6 w-6" />
           </button>

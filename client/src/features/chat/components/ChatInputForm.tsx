@@ -138,6 +138,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
           onChange={handleFileSelect}
           className="hidden"
           capture={undefined}
+          aria-label="Upload image"
         />
 
         {/* Text input - full width at top */}
@@ -243,6 +244,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
               size="icon"
               className="rounded-lg bg-gray-200 hover:bg-gray-100"
               disabled={!canSubmit}
+              aria-label="Send message"
             >
               <Send className="h-5 w-5 text-black" />
             </Button>

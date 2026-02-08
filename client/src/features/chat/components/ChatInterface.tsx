@@ -132,6 +132,7 @@ function WithMessage({
         <button
           onClick={scrollToBottom}
           className="border-border bg-background text-muted-foreground hover:text-foreground fixed bottom-28 right-6 z-20 flex size-10 items-center justify-center rounded-full border shadow-lg transition-colors"
+          aria-label="Scroll to bottom"
         >
           <ArrowDown className="size-5" />
         </button>

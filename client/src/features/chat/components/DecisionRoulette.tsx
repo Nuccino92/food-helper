@@ -364,6 +364,7 @@ export function DecisionRoulette({
                     <button
                       onClick={() => handleRemoveOption(i)}
                       className="ml-1 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10"
+                      aria-label={`Remove ${opt}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -386,6 +387,7 @@ export function DecisionRoulette({
                   placeholder="Add an option..."
                   maxLength={30}
                   className="border-input bg-background flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-offset-1"
+                  aria-label="Add a new option"
                 />
                 <Button
                   onClick={handleAddOption}

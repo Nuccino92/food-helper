@@ -67,7 +67,7 @@ export default function Header({ className }: HeaderProps) {
         {/* Settings menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="secondary">
+            <Button size="icon" variant="secondary" aria-label="Open menu">
               <Menu className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
