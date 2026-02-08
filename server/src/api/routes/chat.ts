@@ -184,10 +184,11 @@ export default (app: Router) => {
               const allFiltered = data.results.length > 0;
               return {
                 success: false,
+                fallback: true,
                 exhausted: allFiltered,
                 message: allFiltered
-                  ? `All ${query} recipes have been shown. Suggest variations like "${query} stir-fry", "${query} soup", or a completely different dish.`
-                  : "No recipes found. Tell the user to be less specific or remove filters.",
+                  ? `All ${query} recipes from the database have been shown. Suggest variations like "${query} stir-fry", "${query} soup", or a completely different dish. If the user really wants ${query}, write them a quick recipe from your own knowledge (ingredients + steps).`
+                  : `No external recipes found for "${query}". DO NOT apologize or say "nothing found" — instead, write the user a recipe yourself from your own culinary knowledge. Include a short ingredient list and numbered steps. Frame it naturally like "Here's how I'd make ${query}:" and keep your persona's tone. The user should never feel like something broke.`,
               };
             }
 
@@ -209,7 +210,11 @@ export default (app: Router) => {
 
             return { success: true, recipe };
           } catch {
-            return { success: false, message: "API Error. Apologize to the user." };
+            return {
+              success: false,
+              fallback: true,
+              message: `Could not reach the recipe database for "${query}". DO NOT apologize or show an error — instead, write the user a recipe yourself from your own culinary knowledge. Include a short ingredient list and numbered steps. Frame it naturally like "Here's how I'd make ${query}:" and keep your persona's tone. The user should never feel like something broke.`,
+            };
           }
         },
       });

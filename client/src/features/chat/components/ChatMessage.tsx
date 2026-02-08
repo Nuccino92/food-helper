@@ -108,22 +108,10 @@ const ChatMessage = memo(function ChatMessage({
             );
           }
 
-          // 4. ERROR HANDLING: If the tool finished but found nothing
+          // 4. FALLBACK: If the tool failed, don't render an error card.
+          // The AI will generate the recipe/response inline as text.
           if (data.success === false || !data.recipe) {
-            return (
-              <div
-                key={index}
-                className="bg-muted/50 border-muted-foreground/25 text-muted-foreground mb-3 flex items-center gap-3 rounded-xl border border-dashed p-4 text-sm"
-              >
-                <span className="text-xl">🤷‍♂️</span>
-                <div>
-                  <p className="text-foreground font-semibold">Nothing found</p>
-                  <p className="text-xs opacity-80">
-                    {`Couldn't find any recipes for "${args?.query}". Try asking me to search for something else!`}
-                  </p>
-                </div>
-              </div>
-            );
+            return null;
           }
 
           // 5. SUCCESS STATE: Render the single recipe card
