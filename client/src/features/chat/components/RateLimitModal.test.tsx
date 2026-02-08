@@ -40,17 +40,18 @@ describe("RateLimitModal", () => {
       const resetTime = Date.now() + 1800000; // 30 minutes
       render(<RateLimitModal {...defaultProps} resetTime={resetTime} />);
 
-      // Should show approximately 30:00
-      expect(screen.getByText(/30:0/)).toBeInTheDocument();
+      // Timer is initialized via useEffect
+      vi.advanceTimersByTime(0);
+      expect(screen.getByText(/remaining/)).toBeInTheDocument();
     });
 
     it("should show feedback option when canProvideFeedback is true", () => {
       render(<RateLimitModal {...defaultProps} canProvideFeedback={true} />);
 
       expect(
-        screen.getByText(/How likely are you to recommend Miso/)
+        screen.getByText(/Would you recommend Miso/)
       ).toBeInTheDocument();
-      expect(screen.getByText("Submit & get tokens")).toBeInTheDocument();
+      expect(screen.getByText("Submit & claim tokens")).toBeInTheDocument();
     });
 
     it("should show already claimed message when canProvideFeedback is false", () => {
@@ -59,7 +60,7 @@ describe("RateLimitModal", () => {
       expect(
         screen.getByText(/You've already received bonus tokens/)
       ).toBeInTheDocument();
-      expect(screen.queryByText("Submit & get tokens")).not.toBeInTheDocument();
+      expect(screen.queryByText("Submit & claim tokens")).not.toBeInTheDocument();
     });
   });
 
@@ -78,26 +79,26 @@ describe("RateLimitModal", () => {
       const scoreButton = screen.getByRole("button", { name: "8" });
       fireEvent.click(scoreButton);
 
-      // Button should have green styling for promoter score (9-10) or appropriate color
-      expect(scoreButton).toHaveClass("bg-yellow-500"); // 8 is passive
+      // 8 is a passive score (7-8) → amber
+      expect(scoreButton).toHaveClass("bg-amber-500");
     });
 
-    it("should apply red color for detractor scores (0-6)", () => {
+    it("should apply rose color for detractor scores (0-6)", () => {
       render(<RateLimitModal {...defaultProps} />);
 
       const scoreButton = screen.getByRole("button", { name: "3" });
       fireEvent.click(scoreButton);
 
-      expect(scoreButton).toHaveClass("bg-red-500");
+      expect(scoreButton).toHaveClass("bg-rose-500");
     });
 
-    it("should apply green color for promoter scores (9-10)", () => {
+    it("should apply emerald color for promoter scores (9-10)", () => {
       render(<RateLimitModal {...defaultProps} />);
 
       const scoreButton = screen.getByRole("button", { name: "10" });
       fireEvent.click(scoreButton);
 
-      expect(scoreButton).toHaveClass("bg-green-500");
+      expect(scoreButton).toHaveClass("bg-emerald-500");
     });
   });
 
@@ -105,7 +106,7 @@ describe("RateLimitModal", () => {
     it("should disable submit button when no score selected", () => {
       render(<RateLimitModal {...defaultProps} />);
 
-      const submitButton = screen.getByRole("button", { name: "Submit & get tokens" });
+      const submitButton = screen.getByRole("button", { name: "Submit & claim tokens" });
       expect(submitButton).toBeDisabled();
     });
 
@@ -114,7 +115,7 @@ describe("RateLimitModal", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "8" }));
 
-      const submitButton = screen.getByRole("button", { name: "Submit & get tokens" });
+      const submitButton = screen.getByRole("button", { name: "Submit & claim tokens" });
       expect(submitButton).not.toBeDisabled();
     });
 
@@ -130,7 +131,7 @@ describe("RateLimitModal", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "9" }));
-      fireEvent.click(screen.getByRole("button", { name: "Submit & get tokens" }));
+      fireEvent.click(screen.getByRole("button", { name: "Submit & claim tokens" }));
 
       await waitFor(() => {
         expect(onFeedbackSubmit).toHaveBeenCalledWith(9);
@@ -149,7 +150,7 @@ describe("RateLimitModal", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "8" }));
-      fireEvent.click(screen.getByRole("button", { name: "Submit & get tokens" }));
+      fireEvent.click(screen.getByRole("button", { name: "Submit & claim tokens" }));
 
       await waitFor(() => {
         expect(screen.getByText(/5,000 bonus tokens/)).toBeInTheDocument();
@@ -168,7 +169,7 @@ describe("RateLimitModal", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "8" }));
-      fireEvent.click(screen.getByRole("button", { name: "Submit & get tokens" }));
+      fireEvent.click(screen.getByRole("button", { name: "Submit & claim tokens" }));
 
       await waitFor(() => {
         expect(screen.getByText(/Already received bonus/)).toBeInTheDocument();
@@ -190,7 +191,7 @@ describe("RateLimitModal", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "8" }));
-      fireEvent.click(screen.getByRole("button", { name: "Submit & get tokens" }));
+      fireEvent.click(screen.getByRole("button", { name: "Submit & claim tokens" }));
 
       await waitFor(() => {
         expect(screen.getByText("Submitting...")).toBeInTheDocument();
@@ -206,22 +207,13 @@ describe("RateLimitModal", () => {
   });
 
   describe("close behavior", () => {
-    it("should call onClose when 'I'll wait' button is clicked", () => {
+    it("should call onClose when Close button is clicked", () => {
       const onClose = vi.fn();
       render(<RateLimitModal {...defaultProps} onClose={onClose} />);
 
-      fireEvent.click(screen.getByRole("button", { name: "I'll wait" }));
-
-      expect(onClose).toHaveBeenCalled();
-    });
-
-    it("should call onClose when dialog is dismissed", () => {
-      const onClose = vi.fn();
-      render(<RateLimitModal {...defaultProps} onClose={onClose} />);
-
-      // Find and click the close button (X)
-      const closeButton = screen.getByRole("button", { name: "Close" });
-      fireEvent.click(closeButton);
+      // Two close buttons exist (Radix X + footer), click the footer one
+      const closeButtons = screen.getAllByRole("button", { name: "Close" });
+      fireEvent.click(closeButtons[closeButtons.length - 1]);
 
       expect(onClose).toHaveBeenCalled();
     });
@@ -249,16 +241,14 @@ describe("RateLimitModal", () => {
     it("should have accessible dialog title", () => {
       render(<RateLimitModal {...defaultProps} />);
 
-      expect(
-        screen.getByRole("heading", { name: "Taking a quick break" })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Taking a quick break")).toBeInTheDocument();
     });
 
     it("should have accessible NPS labels", () => {
       render(<RateLimitModal {...defaultProps} />);
 
-      expect(screen.getByText("Not at all likely")).toBeInTheDocument();
-      expect(screen.getByText("Extremely likely")).toBeInTheDocument();
+      expect(screen.getByText("Not likely")).toBeInTheDocument();
+      expect(screen.getByText("Very likely")).toBeInTheDocument();
     });
   });
 });

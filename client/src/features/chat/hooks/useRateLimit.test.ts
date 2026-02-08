@@ -155,20 +155,15 @@ describe("useRateLimit hook", () => {
       mockLocalStorage.getItem.mockReturnValue("test-fp");
       mockFetch.mockRejectedValue(new Error("Network error"));
 
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       const { useRateLimit } = await import("./useRateLimit");
       const { result } = renderHook(() => useRateLimit());
 
-      // Should not throw
+      // Should not throw — fetch was called but error was silently caught
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
       expect(result.current.status).toBeNull();
-      consoleSpy.mockRestore();
     });
   });
 

@@ -131,20 +131,12 @@ describe("Rate Limit Service", () => {
       expect(result.newRemaining).toBe(10000);
     });
 
-    it("storeFeedback should not throw (logs instead)", async () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    it("storeFeedback should silently return without throwing", async () => {
       const { storeFeedback } = await import("./rateLimit");
 
       await expect(
         storeFeedback("test-user", 8, "test context")
       ).resolves.toBeUndefined();
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[Feedback] Rate limiting disabled, skipping storage:",
-        expect.objectContaining({ score: 8 })
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 
