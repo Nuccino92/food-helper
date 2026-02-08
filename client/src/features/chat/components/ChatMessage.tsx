@@ -82,7 +82,6 @@ const ChatMessage = memo(function ChatMessage({
           // 1. Normalize Data
           const data =
             part.output || part.result || part.toolInvocation?.result || part.toolInvocation?.output;
-          const args = part.input || part.args || part.toolInvocation?.args;
           const toolName =
             part.toolName ||
             part.toolInvocation?.toolName ||

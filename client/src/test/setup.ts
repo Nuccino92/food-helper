@@ -17,7 +17,7 @@ const localStorageMock = {
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
 // Mock fetch
-global.fetch = vi.fn();
+(globalThis as Record<string, unknown>).fetch = vi.fn();
 
 // Mock import.meta.env
 vi.stubGlobal("import.meta", {
