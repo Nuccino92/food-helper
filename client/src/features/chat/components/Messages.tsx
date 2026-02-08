@@ -5,11 +5,13 @@ import ChatMessage from "./ChatMessage";
 interface MessageListProps {
   messages: UIMessage[];
   isWaitingForResponse: boolean;
+  onSendMessage: (message: string) => void;
 }
 
 export default function Messages({
   messages,
   isWaitingForResponse,
+  onSendMessage,
 }: MessageListProps) {
   // Find the last user message index
   const lastUserMessageIndex = messages.findLastIndex((m) => m.role === "user");
@@ -29,6 +31,7 @@ export default function Messages({
               <ChatMessage
                 message={message}
                 isFirstMessage={index === 0}
+                onSendMessage={onSendMessage}
               />
             </div>
 

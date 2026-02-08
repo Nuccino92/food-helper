@@ -504,3 +504,51 @@ https://stackoverflow.com/questions/79499818/how-to-use-custom-color-themes-in-t
   --glow-color-1: rgba(184, 134, 11, 0.5);
   --glow-color-2: rgba(218, 165, 32, 0.7);
 }
+
+/* ── Decision Roulette Animations ── */
+
+.roulette-spinning {
+  animation: roulette-glow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes roulette-glow {
+  from {
+    box-shadow: 0 0 15px var(--roulette-glow-1), 0 0 30px var(--roulette-glow-2);
+  }
+  to {
+    box-shadow: 0 0 25px var(--roulette-glow-1), 0 0 50px var(--roulette-glow-2);
+  }
+}
+
+.roulette-landed-text {
+  animation: roulette-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes roulette-pop {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.roulette-confetti {
+  animation: roulette-confetti-burst ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes roulette-confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform:
+      translate(-50%, -50%)
+      translateX(var(--confetti-x))
+      translateY(calc(var(--confetti-y) + 80px))
+      rotate(var(--confetti-r));
+    opacity: 0;
+  }
+}

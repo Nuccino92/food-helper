@@ -98,6 +98,7 @@ function WithMessage({
         <Messages
           messages={messages}
           isWaitingForResponse={isWaitingForResponse}
+          onSendMessage={(msg: string) => sendMessage(msg)}
         />
       </div>
 

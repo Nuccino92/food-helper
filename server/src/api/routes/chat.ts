@@ -5,6 +5,7 @@ import { z } from "zod";
 import { buildSystemPrompt } from "../../personas";
 import { findRestaurantsTool } from "../../tools/findRestaurants";
 import { createFlagAbuseTool } from "../../tools/flagAbuse";
+import { decisionRouletteTool } from "../../tools/decisionRoulette";
 import {
   checkAbuseLock,
   checkBurstLimit,
@@ -222,6 +223,7 @@ export default (app: Router) => {
           searchRecipes: searchRecipesWithContext,
           findRestaurant: findRestaurantsTool,
           flagAbuse: createFlagAbuseTool(identifier),
+          decisionRoulette: decisionRouletteTool,
         },
         stopWhen: stepCountIs(3), // Allow tool call + response in one turn
       });

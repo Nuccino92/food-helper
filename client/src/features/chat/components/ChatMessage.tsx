@@ -6,16 +6,19 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "@ai-sdk/react";
 import { RecipeCard } from "./RecipeCard";
+import { DecisionRoulette } from "./DecisionRoulette";
 import { MessageImages } from "./MessageImage";
 
 interface ChatMessageProps {
   message: UIMessage;
   isFirstMessage: boolean;
+  onSendMessage: (message: string) => void;
 }
 
 const ChatMessage = memo(function ChatMessage({
   message,
   isFirstMessage,
+  onSendMessage,
 }: ChatMessageProps) {
   const isUser = message.role === "user";
 
@@ -54,16 +57,13 @@ const ChatMessage = memo(function ChatMessage({
     }))
     .filter((img: { url: string }) => img.url);
 
-  // 3. EXTRACT RECIPES
-  // We scan 'parts' directly because your JSON shows the data lives there
-  // under 'output', not 'result'.
+  // 3. EXTRACT TOOL INVOCATIONS
+  // The Vercel AI SDK uses "tool-{toolName}" as the part type (e.g. "tool-searchRecipes", "tool-decisionRoulette")
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toolParts = message.parts?.filter((part: any) => {
-    // Check for standard SDK 'tool-invocation' OR your specific 'tool-searchRecipes' type
     return (
       part.type === "tool-invocation" ||
-      part.type === "tool-searchRecipes" ||
-      (part.toolInvocation && part.toolInvocation.toolName === "searchRecipes")
+      (typeof part.type === "string" && part.type.startsWith("tool-"))
     );
   });
 
@@ -78,19 +78,40 @@ const ChatMessage = memo(function ChatMessage({
       {/* USER IMAGES */}
       {isUser && images.length > 0 && <MessageImages images={images} />}
 
-      {/* RECIPE CARD (above text for assistant messages) */}
+      {/* TOOL RESULTS (above text for assistant messages) */}
       {!isUser &&
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         toolParts?.map((part: any, index: number) => {
           // 1. Normalize Data
           const data =
-            part.output || part.result || part.toolInvocation?.result;
+            part.output || part.result || part.toolInvocation?.result || part.toolInvocation?.output;
           const args = part.input || part.args || part.toolInvocation?.args;
+          const toolName =
+            part.toolName ||
+            part.toolInvocation?.toolName ||
+            (typeof part.type === "string" && part.type.startsWith("tool-")
+              ? part.type.slice(5)
+              : undefined);
 
           // 2. SAFETY CHECK: If the tool is still loading (no data yet), ignore.
           if (!data) return null;
 
-          // 3. ERROR HANDLING: If the tool finished but found nothing
+          // 3. DECISION ROULETTE
+          if (
+            toolName === "decisionRoulette" &&
+            data.success &&
+            data.options
+          ) {
+            return (
+              <DecisionRoulette
+                key={part.toolCallId || `roulette-${index}`}
+                options={data.options}
+                onSendMessage={onSendMessage}
+              />
+            );
+          }
+
+          // 4. ERROR HANDLING: If the tool finished but found nothing
           if (data.success === false || !data.recipe) {
             return (
               <div
@@ -108,7 +129,7 @@ const ChatMessage = memo(function ChatMessage({
             );
           }
 
-          // 4. SUCCESS STATE: Render the single recipe card
+          // 5. SUCCESS STATE: Render the single recipe card
           return (
             <RecipeCard key={part.toolCallId || index} recipe={data.recipe} />
           );
