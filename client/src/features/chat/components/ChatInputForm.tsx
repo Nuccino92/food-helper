@@ -149,6 +149,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
           onKeyDown={handleKeyDown}
           maxRows={12}
           minRows={1}
+          autoFocus
           placeholder={
             hasImages ? "Add a message (optional)..." : placeholder[persona]
           }
