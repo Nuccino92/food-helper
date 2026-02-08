@@ -13,7 +13,7 @@ function HomePage() {
 
   return (
     <div
-      className={`aura-${persona} chat-page flex h-screen w-full flex-col items-center overflow-x-hidden overflow-y-auto`}
+      className={`aura-${persona} chat-page chat-scroll-container flex h-screen w-full flex-col items-center overflow-x-hidden overflow-y-auto`}
     >
       <Header className="sticky top-0 z-10 shrink-0" />
       <ChatInterface key={persona} />

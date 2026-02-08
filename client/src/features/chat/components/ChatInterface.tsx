@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
+import { ArrowDown } from "lucide-react";
 
 import { ChatInputForm, type ImageData } from "./ChatInputForm";
 import Messages from "./Messages";
@@ -7,6 +8,7 @@ import QuickSelects from "./QuickSelects";
 import { RateLimitModal } from "./RateLimitModal";
 import { QUICK_SELECT_PROMPTS } from "@/data/prompts";
 import { useChatSession } from "../hooks/useChatSesstion";
+import { useChatScroll } from "../hooks/useScrollToBottom";
 import { usePersona } from "@/context/PersonaProvider/hooks";
 
 export default function ChatInterface() {
@@ -59,6 +61,7 @@ export default function ChatInterface() {
         ) : (
           <WithMessage
             messages={messages}
+            status={status}
             isLoading={isLoading}
             isWaitingForResponse={isWaitingForResponse}
             sendMessage={handleSendMessage}
@@ -81,6 +84,7 @@ export default function ChatInterface() {
 // Update the Type Definition to use the Vercel SDK Message type
 type ChildProps = {
   messages: UIMessage[];
+  status: string;
   isLoading: boolean;
   isWaitingForResponse: boolean;
   sendMessage: (message: string, images?: ImageData[]) => void;
@@ -88,10 +92,19 @@ type ChildProps = {
 
 function WithMessage({
   messages,
+  status,
   isLoading,
   isWaitingForResponse,
   sendMessage,
 }: ChildProps) {
+  const {
+    lastUserMessageRef,
+    contentEndRef,
+    messagesContainerRef,
+    showScrollButton,
+    scrollToBottom,
+  } = useChatScroll(messages, status);
+
   return (
     <>
       <div className="flex-1">
@@ -99,13 +112,30 @@ function WithMessage({
           messages={messages}
           isWaitingForResponse={isWaitingForResponse}
           onSendMessage={(msg: string) => sendMessage(msg)}
+          lastUserMessageRef={lastUserMessageRef}
+          contentEndRef={contentEndRef}
+          messagesContainerRef={messagesContainerRef}
         />
       </div>
 
-      {/* Sticky input at the bottom */}
-      <div className="from-background via-background sticky bottom-0 bg-linear-to-t to-transparent px-4 pt-6 pb-4">
-        <ChatInputForm onSend={sendMessage} isLoading={isLoading} />
+      {/* Fixed input - completely out of document flow */}
+      <div className="chat-input-area fixed inset-x-0 bottom-0 z-10">
+        <div className="mx-auto w-full max-w-full sm:px-10 xl:max-w-2xl xl:px-0! 2xl:max-w-3xl">
+          <div className="from-background via-background bg-linear-to-t to-transparent px-4 pt-6 pb-4">
+            <ChatInputForm onSend={sendMessage} isLoading={isLoading} />
+          </div>
+        </div>
       </div>
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="border-border bg-background text-muted-foreground hover:text-foreground fixed bottom-28 right-6 z-20 flex size-10 items-center justify-center rounded-full border shadow-lg transition-colors"
+        >
+          <ArrowDown className="size-5" />
+        </button>
+      )}
     </>
   );
 }
