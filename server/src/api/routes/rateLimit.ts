@@ -33,8 +33,7 @@ export default (app: Router) => {
           : Math.max(0, Math.ceil((status.reset - Date.now()) / 1000)),
         canProvideFeedback: abuseLock.locked ? false : status.canProvideFeedback,
       });
-    } catch (error) {
-      console.error("Rate limit status error:", error);
+    } catch {
       res.status(500).json({ error: "Failed to get rate limit status" });
     }
   });
@@ -75,8 +74,7 @@ export default (app: Router) => {
         message: result.message,
         newRemaining: result.newRemaining,
       });
-    } catch (error) {
-      console.error("Feedback submission error:", error);
+    } catch {
       res.status(500).json({ error: "Failed to process feedback" });
     }
   });

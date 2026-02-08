@@ -42,16 +42,6 @@ const burstLimiter =
     prefix: "ratelimit:burst",
   });
 
-// Log rate limit status on startup
-if (!isRateLimitEnabled) {
-  console.log("⚠️  Rate limiting is DISABLED (RATE_LIMIT_ENABLED=false)");
-} else if (!hasRedisConfig) {
-  console.log(
-    "⚠️  Rate limiting is DISABLED (missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN)",
-  );
-} else {
-  console.log("✅ Rate limiting is ENABLED");
-}
 
 // Simple token estimation based on character count
 // Claude uses ~4 characters per token on average for English
@@ -276,10 +266,6 @@ export async function storeFeedback(
 ): Promise<void> {
   // No-op if rate limiting/Redis is disabled
   if (!isRateLimitEnabled || !redis) {
-    console.log("[Feedback] Rate limiting disabled, skipping storage:", {
-      score,
-      sessionContext,
-    });
     return;
   }
 

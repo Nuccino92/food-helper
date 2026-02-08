@@ -74,8 +74,8 @@ export function useRateLimit() {
         setIsLimited(data.remaining <= 0);
         return data;
       }
-    } catch (err) {
-      console.error("Failed to fetch rate limit status:", err);
+    } catch {
+      // Silently fail - rate limit status is non-critical
     }
     return null;
   }, [fingerprint]);
@@ -139,8 +139,7 @@ export function useRateLimit() {
         }
 
         return data;
-      } catch (err) {
-        console.error("Failed to submit feedback:", err);
+      } catch {
         return { success: false, message: "Network error. Please try again." };
       }
     },

@@ -84,7 +84,6 @@ export const searchRecipesTool = tool({
 
       return { success: true, recipes: results };
     } catch (error) {
-      console.error("Spoonacular Error:", error);
       return { success: false, message: "API Error. Apologize to the user." };
     }
   },

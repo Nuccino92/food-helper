@@ -99,20 +99,16 @@ export const findRestaurantsTool = tool({
 
     try {
       const url = `https://api.spoonacular.com/food/menuItems/search?${params}`;
-      console.log("[findRestaurants] Fetching:", url.replace(apiKey, "***"));
 
       const response = await fetch(url);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("[findRestaurants] API Error:", response.status, errorText);
         throw new Error(
           `Spoonacular API Error: ${response.status} ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      console.log("[findRestaurants] Results count:", data.menuItems?.length || 0);
 
       // Map to clean format with nutrition summary
       const menuItems = (data.menuItems || []).map((item: any) => ({
@@ -154,7 +150,6 @@ export const findRestaurantsTool = tool({
         searchTip: `Suggest user search: "${query} restaurants near ${location || "me"}" to find local options.`,
       };
     } catch (error) {
-      console.error("Spoonacular Menu Items Error:", error);
       return {
         success: false,
         message: "Failed to search menu items due to an API error.",

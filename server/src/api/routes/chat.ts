@@ -208,8 +208,7 @@ export default (app: Router) => {
             };
 
             return { success: true, recipe };
-          } catch (error) {
-            console.error("Spoonacular Error:", error);
+          } catch {
             return { success: false, message: "API Error. Apologize to the user." };
           }
         },
@@ -253,11 +252,8 @@ export default (app: Router) => {
       // Estimate: input tokens + output tokens (streamed bytes / 4)
       const outputTokens = Math.ceil(streamedBytes / 4);
       const totalTokens = estimatedInputTokens + outputTokens;
-      deductTokens(identifier, totalTokens).catch((err) => {
-        console.error("Failed to deduct tokens:", err);
-      });
-    } catch (error) {
-      console.error("Error:", error);
+      deductTokens(identifier, totalTokens).catch(() => {});
+    } catch {
       if (!res.headersSent) res.status(500).end();
     }
   });

@@ -54,8 +54,6 @@ export function useChatSession() {
     experimental_throttle: 50,
 
     onError: (error) => {
-      console.error("Chat Error:", error);
-
       // Check if this is a rate limit error
       // The error might be a Response object or contain the response
       if (error && typeof error === "object") {
@@ -74,8 +72,6 @@ export function useChatSession() {
     },
 
     onFinish: (message) => {
-      console.log("✅ Stream finished:", message);
-
       // Refresh rate limit status after successful message
       rateLimit.fetchStatus();
 
