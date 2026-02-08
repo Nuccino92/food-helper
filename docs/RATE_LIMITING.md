@@ -61,15 +61,7 @@ Set `RATE_LIMIT_ENABLED=false` in your `.env` file:
 RATE_LIMIT_ENABLED = "false"
 ```
 
-The server will log:
-```
-⚠️  Rate limiting is DISABLED (RATE_LIMIT_ENABLED=false)
-```
-
-If Redis credentials are missing, rate limiting auto-disables:
-```
-⚠️  Rate limiting is DISABLED (missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN)
-```
+If Redis credentials are missing, rate limiting auto-disables with the same bypass behavior.
 
 ## User Identification
 
@@ -167,6 +159,29 @@ When rate limited, the chat endpoint returns:
 }
 ```
 
+## Abuse Lock
+
+The AI can trigger a user lockout via the `flagAbuse` tool when it detects clear abuse patterns:
+
+- 3+ consecutive gibberish/nonsensical messages
+- Prompt injection or jailbreak attempts
+- Repeated spam of the same message
+- Hostile/harassing content unrelated to food
+
+When triggered, the user is locked out for the remainder of the rate limit window (~1 hour). The lock is stored as a simple Redis key with a TTL.
+
+### Chat endpoint behavior
+
+The abuse lock is checked **before** burst and token checks. If locked, the endpoint returns a 429 with `remaining: 0`.
+
+### Status endpoint behavior
+
+When a user is abuse-locked, the `/api/rate-limit/status` endpoint returns `remaining: 0` and `canProvideFeedback: false`, using the lock's reset time.
+
+### Feedback endpoint behavior
+
+Abuse-locked users receive a 403 when attempting to submit feedback.
+
 ## Client Integration
 
 ### useRateLimit Hook
@@ -254,6 +269,7 @@ Each feedback entry:
 |-------------|------|-----|-------------|
 | `ratelimit:tokens:{identifier}` | Number | 1 hour | Token usage count |
 | `ratelimit:burst:{identifier}` | Number | 1 minute | Burst request count |
+| `abuse:lock:{identifier}` | Boolean | 1 hour | AI-triggered abuse lockout |
 | `feedback:granted:{identifier}` | Boolean | 1 hour | Feedback bonus claimed |
 | `feedback:nps` | List | None | All NPS feedback entries |
 
