@@ -182,7 +182,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
 
                 {/* Mobile options dropdown */}
                 {showMobileOptions && (
-                  <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 rounded-lg border bg-white p-1 shadow-lg">
+                  <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 whitespace-nowrap rounded-lg border bg-white p-1 shadow-lg">
                     <button
                       type="button"
                       onClick={() => {
@@ -233,7 +233,7 @@ export function ChatInputForm({ onSend, isLoading }: ChatInputFormProps) {
             )}
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-400">
+            <span className="hidden text-sm font-medium text-gray-400 sm:inline">
               Chatting with {personaName}
             </span>
 

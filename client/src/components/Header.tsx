@@ -44,7 +44,12 @@ export default function Header({ className }: HeaderProps) {
         onClick={() => window.location.reload()}
         aria-label="Reload application"
       >
-        <div className="text-left">
+        <img
+          src="/miso-icon.png"
+          alt="Miso logo"
+          className="size-14 rounded-full"
+        />
+        <div className="hidden text-left sm:block">
           <h1 className="text-xl leading-tight font-bold">Miso</h1>
           <p className="text-muted-foreground text-xs font-normal">
             Can't decide what to eat?
