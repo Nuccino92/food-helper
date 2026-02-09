@@ -19,6 +19,9 @@ LLM costs are variable - a simple "hi" costs ~50 tokens while a complex recipe s
 ┌─────────────────────────────────────────────────────────────┐
 │  Client Request                                              │
 ├─────────────────────────────────────────────────────────────┤
+│  0. Abuse Lock Check                                         │
+│     └─ Reject immediately if AI-triggered lockout is active  │
+├─────────────────────────────────────────────────────────────┤
 │  1. Burst Check (20 req/min)                                │
 │     └─ Fast, cheap check to stop obvious abuse              │
 ├─────────────────────────────────────────────────────────────┤
@@ -286,13 +289,6 @@ const tokenLimiter = new Ratelimit({
   analytics: true,  // Enables Upstash analytics
 });
 ```
-
-### Server Logs
-
-The server logs rate limit status on startup:
-- `✅ Rate limiting is ENABLED`
-- `⚠️  Rate limiting is DISABLED (RATE_LIMIT_ENABLED=false)`
-- `⚠️  Rate limiting is DISABLED (missing credentials)`
 
 ## Customization
 
